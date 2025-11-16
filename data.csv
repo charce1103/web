@@ -1,6 +1,6 @@
 ﻿名稱,網址,圖片網址,分類
 開學準備週講義,https://kaixuezhunbeizhou-ehubgyi.gamma.site/,images/paper.jpg,講義資料
-Markdown to slides,https://script.google.com/macros/s/AKfycbzMQDKP44Cm5Fxjd-3oXMPjGtWzF4Bkf90ZRcAYen305kLtvDl9aKr6HMboXjP8I3pq/exec,images/computer.jpg,應用工具
+Markdown to slides,https://script.google.com/macros/s/AKfycbzMQDKP44Cm5Fxjd-3oXMPjGtWzF4Bkf90ZRcAYen305kLtvDl9aKr6HMboXjP8I3pq/exec,images/computer.jpg,簡報工具
 學校公告小編,https://gemini.google.com/gem/fea40cfb042b,images/learn.jpg,學校行政
 公文寫作專家,https://gemini.google.com/gem/426ac641da73,images/learn.jpg,學校行政
 公文助手（gpt）,https://chatgpt.com/g/g-UVEf7LAcx-gong-wen-zhu-shou-tai-wan-ban-ben,images/learn.jpg,學校行政
@@ -22,7 +22,7 @@ HSEEP緊急支援功能 ,https://notebooklm.google.com/notebook/c6ffea51-e097-4b
 我的聊天貼圖,https://gemini.google.com/share/c5ffe3b6d23f,https://images.unsplash.com/photo-1759928222798-63e73f690563?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,應用工具、圖片工具
 校園事件暨不適任教師處置相關法規解析,https://notebooklm.google.com/notebook/cb40dd03-f03c-48b7-a72e-bf3f65cfc41c,https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1864&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,學校行政
 Puti-AI 知識轉化機,https://gemini.google.com/share/0f13e31a912b,https://plus.unsplash.com/premium_photo-1675644727129-9e2fbc03c500?q=80&w=1944&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,Puti-AI、AI 學習
-Puti-AI 教育用提示詞助手,https://gemini.google.com/share/54e3ecb0c8b8,https://plus.unsplash.com/premium_photo-1726079246917-46f2b37f7e9e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,Puti-AI、班級經營與教學
+Puti-AI 教育用提示詞助手,https://gemini.google.com/share/54e3ecb0c8b8,https://plus.unsplash.com/premium_photo-1726079246917-46f2b37f7e9e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,Puti-AI、班級經營與教學、AI 學習
 Puti-AI 數位觀課助手,https://gemini.google.com/gem/507f71e3ba92,https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,Puti-AI、班級經營與教學
 Puti-AI 智慧心得助手,https://gemini.google.com/share/ab2f7b5226ee,https://images.unsplash.com/photo-1528938102132-4a9276b8e320?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,Puti-AI、班級經營與教學
 Puti-AI 親師溝通助手,https://student.magicschool.ai/s/rooms/73b80e64-2d44-4bda-bf59-35dae359cf6f/tools/969a38cd-bbe3-47a2-b36f-fc17493cca2b?roomToolId=969a38cd-bbe3-47a2-b36f-fc17493cca2b&thread=111415424,https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,Puti-AI、班級經營與教學
@@ -36,9 +36,8 @@ AI 作文小助教,https://poe.com/FunFun.Tutor-Writing,https://images.unsplash.
 素養導向評量設計助手,https://poe.com/FunFun-Design.Exam,https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,方方老師、班級經營與教學
 跨領域教案設計助手,https://poe.com/FunFun-plan.design,https://plus.unsplash.com/premium_photo-1661400138823-cc752d5aa2c3?q=80&w=1275&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,方方老師、班級經營與教學
 陳情與申訴溝通專家,https://gemini.google.com/gem/9378b6a6904d,https://plus.unsplash.com/premium_photo-1666739388622-d7d2b6e41a53?q=80&w=1353&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,學校行政
-災害應變與校園安全管理,https://notebooklm.google.com/notebook/ade8c55d-aa9e-472a-af24-b60b0bb16f49,https://plus.unsplash.com/premium_photo-1681989490797-dbe51c438b61?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,學校行政
-災害應變與校園安全管理,https://notebooklm.google.com/notebook/ade8c55d-aa9e-472a-af24-b60b0bb16f49,https://plus.unsplash.com/premium_photo-1681989490797-dbe51c438b61?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,防災教育
-AI 貼圖生成小工具,https://gemini.google.com/share/ad8e0656101a,https://images.unsplash.com/photo-1614639935349-3507fee706d1?q=80&w=765&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,方方老師
+災害應變與校園安全管理,https://notebooklm.google.com/notebook/ade8c55d-aa9e-472a-af24-b60b0bb16f49,https://plus.unsplash.com/premium_photo-1681989490797-dbe51c438b61?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,學校行政、防災教育
+AI 貼圖生成小工具,https://gemini.google.com/share/ad8e0656101a,https://images.unsplash.com/photo-1614639935349-3507fee706d1?q=80&w=765&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,方方老師、圖片工具
 方方老師個人網頁,https://changsheng0612.notion.site/funfun-edu-ai,https://changsheng0612.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F0d57f50c-1080-44fe-9b68-bbe7d53039fd%2F3a74c48d-ad91-4055-a3dd-7ed32db6e44a%2F1.png?table=block&id=90613dbd-6f2f-4571-84d0-1748eebffeff&spaceId=0d57f50c-1080-44fe-9b68-bbe7d53039fd&width=2000&userId=&cache=v2,方方老師、AI 學習
 阿剛老師的異想世界,https://kentxchang.blogspot.com/,https://images.unsplash.com/photo-1758685849121-c24d74e8f775?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,阿剛老師、AI 學習
 阿剛老師的AI自製軟體地圖,https://filedn.com/laMtL9jmKf7JrDEQG0A6OPy/html/list/list-out.html,https://images.unsplash.com/photo-1758685849121-c24d74e8f775?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,阿剛老師、AI 學習
@@ -46,7 +45,7 @@ AI 貼圖生成小工具,https://gemini.google.com/share/ad8e0656101a,https://im
 Xian 定期評量審題助手,https://gemini.google.com/gem/1R-_GGj2j3C2ZxzdBV4g_IAGQGZpA6Ffr?usp=sharing,https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170,班級經營與教學
 Markdown 轉換 HTML工具,https://filedn.com/laMtL9jmKf7JrDEQG0A6OPy/html/md2html/,https://plus.unsplash.com/premium_photo-1669077046964-479e88e86ec5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880,應用工具、網頁與程式
 Xian 作文批閱小老師,https://gemini.google.com/share/23f7db4f0023,https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1073,班級經營與教學
-Unsplash,https://unsplash.com/,https://images.unsplash.com/photo-1555530001-acee1750bdcc?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687,應用工具
+Unsplash,https://unsplash.com/,https://images.unsplash.com/photo-1555530001-acee1750bdcc?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687,圖片工具
 Gemini AI 在國中小教育現場的應用方式,https://funfunaiedu.github.io/GeminiAILearning/,https://scontent-tpe1-1.xx.fbcdn.net/v/t39.30808-6/568105598_122160392474763530_9018119416764421214_n.jpg?stp=dst-jpg_p526x296_tt6&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=xtKVPwQdSXMQ7kNvwH6M4Ko&_nc_oc=AdlU_SNy23DS1TdxoO-9tUa4evDEBc_htm-tI84MmU-MP2Kcfj8kuPO4FWFIVtyxEzM&_nc_zt=23&_nc_ht=scontent-tpe1-1.xx&_nc_gid=EXJkSoeoVBg-MTms_US2xw&oh=00_AffA9tqPrpTtA-1Zp26tb36Q2XyQ-0T0hhPtoQfY-vC_LQ&oe=68FF1E23,AI 學習
 Gemini App 開發網頁服務很快，但資料只能存 Local嗎？,https://wolkesau.medium.com/gemini-app-%E9%96%8B%E7%99%BC%E7%B6%B2%E9%A0%81%E6%9C%8D%E5%8B%99%E5%BE%88%E5%BF%AB-%E4%BD%86%E8%B3%87%E6%96%99%E5%8F%AA%E8%83%BD%E5%AD%98-local%E5%97%8E-6366857883ff,https://miro.medium.com/v2/resize:fit:720/format:webp/1*V0etEwLZDwMtOnfQmQwhjw.png,AI 學習
 方方老師 教育AI工具箱,https://chunsheng612.github.io/FunFun.AI-Website/,https://plus.unsplash.com/premium_photo-1661284828052-ea25d6ea94cd?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070,方方老師、班級經營與教學、AI 學習
@@ -71,6 +70,3 @@ Google Whisk,https://labs.google/fx/tools/whisk/project,https://images.unsplash.
 阿貴校長的教案產生助理,https://chatgpt.com/g/g-68b8265856a4819184a50c67003a2692-a-gui-xiao-chang-de-jiao-an-chan-sheng-zhu-li,https://excellence.itmonth.org.tw/rwd/110/images/008.jpg,阿貴校長、班級經營與教學
 阿貴校長的校長甄選筆試解題助理,https://chatgpt.com/g/g-675e8c5c57e8819181ed219ba0f6ef15-a-gui-xiao-chang-de-xiao-chang-zhen-xuan-bi-shi-jie-ti-zhu-li,https://excellence.itmonth.org.tw/rwd/110/images/008.jpg,阿貴校長、校長甄試
 Gamma 提示詞助手,https://chatgpt.com/g/g-691881ad86908191921a05e73f04a2f5-gamma-ti-shi-ci-zhu-shou,https://images.unsplash.com/photo-1590959651373-a3db0f38a961?q=80&w=1039&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D,簡報工具
-
-
-
