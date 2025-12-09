@@ -1,604 +1,654 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, AlertTriangle, CheckCircle, XCircle, Backpack, Info, RefreshCw, Minus, Hand, Sun, Snowflake, User, Calendar, Ruler, Star, Heart, Zap, Medal, Moon, CloudRain, Wind, Battery, MapPin, Home, ArrowRight, Play, ThermometerSun, Umbrella } from 'lucide-react';
-
-// --- 資料設定 ---
-const ITEMS_DB = [
-  // 🟢 飲食與水
-  { id: 'f1', name: '瓶裝水', weight: 650, score: 20, type: 1, icon: '💧', stackable: true, tags: ['water'], desc: '生命之源' },
-  { id: 'f2', name: '營養口糧', weight: 100, score: 10, type: 1, icon: '🍪', stackable: true, tags: ['food'], desc: '熱量高' },
-  { id: 'f3', name: '易開罐頭', weight: 350, score: 8, type: 1, icon: '🥫', stackable: true, tags: ['food'], desc: '耐放' },
-  { id: 'f4', name: '巧克力', weight: 50, score: 10, type: 1, icon: '🍫', stackable: true, tags: ['food', 'comfort'], desc: '補血糖心情' },
-  { id: 'f5', name: '泡麵', weight: 100, score: 5, type: 1, icon: '🍜', stackable: true, tags: ['food'], desc: '需熱水' },
-  { id: 'f6', name: '棒棒糖', weight: 20, score: 5, type: 1, icon: '🍭', stackable: true, tags: ['comfort'], desc: '安撫用' },
-  { id: 'x5', name: '大罐汽水', weight: 1200, score: -5, type: 1, icon: '🥤', stackable: true, tags: [], desc: '太重不解渴' },
-  { id: 'x6', name: '洋芋片', weight: 150, score: -2, type: 1, icon: '🥔', stackable: true, tags: [], desc: '佔空間' },
-
-  // 🟡 衣物保暖
-  { id: 'c1', name: '輕便雨衣', weight: 50, score: 15, type: 2, icon: '☔', stackable: true, tags: ['rain', 'warmth', 'wind'], desc: '防雨防風' },
-  { id: 'c2', name: '保暖鋁箔毯', weight: 50, score: 15, type: 2, icon: '⛺', stackable: true, tags: ['warmth', 'sleep'], desc: '防失溫神器' },
-  { id: 'c3', name: '襪子', weight: 40, score: 8, type: 2, icon: '🧦', stackable: true, tags: ['warmth', 'hygiene'], desc: '保暖乾燥' },
-  { id: 'c4', name: '暖暖包', weight: 30, score: 8, type: 2, icon: '🔥', stackable: true, tags: ['warmth'], desc: '禦寒' },
-  { id: 'c5', name: '毛巾', weight: 100, score: 8, type: 2, icon: '🧣', stackable: true, tags: ['hygiene', 'warmth'], desc: '清潔保暖' },
-  { id: 'c6', name: '工作手套', weight: 50, score: 10, type: 2, icon: '🧤', stackable: false, tags: ['protect_hands'], desc: '保護雙手' },
-  { id: 'c7', name: '羽絨衣', weight: 800, score: 5, type: 2, icon: '🧥', stackable: false, tags: ['warmth'], desc: '暖但佔位' },
-  { id: 'c8', name: '遮陽帽', weight: 60, score: 8, type: 2, icon: '🧢', stackable: false, tags: ['sun'], desc: '防曬' },
-  { id: 'c9', name: '換洗衣物', weight: 200, score: 8, type: 2, icon: '👕', stackable: false, tags: ['hygiene'], desc: '保持清潔' },
-
-  // 🔴 醫療衛生
-  { id: 'm1', name: '個人藥品', weight: 20, score: 20, type: 3, icon: '💊', stackable: false, tags: ['medical'], desc: '救命藥' },
-  { id: 'm2', name: '急救包', weight: 150, score: 12, type: 3, icon: '🏥', stackable: false, tags: ['medical', 'injury'], desc: '外傷處理' },
-  { id: 'm3', name: '口罩', weight: 20, score: 10, type: 3, icon: '😷', stackable: true, tags: ['hygiene', 'dust'], desc: '防塵防毒' },
-  { id: 'm4', name: '濕紙巾', weight: 150, score: 8, type: 3, icon: '🧻', stackable: true, tags: ['hygiene', 'toilet'], desc: '清潔身體' },
-  { id: 'm5', name: '衛生紙', weight: 100, score: 8, type: 3, icon: '🧻', stackable: true, tags: ['hygiene', 'toilet'], desc: '如廁必備' },
-  { id: 'm6', name: '衛生棉', weight: 50, score: 8, type: 3, icon: '🌸', stackable: true, tags: ['hygiene', 'injury'], desc: '生理/止血' },
-  { id: 'm7', name: '乾洗手', weight: 80, score: 8, type: 3, icon: '🧼', stackable: false, tags: ['hygiene'], desc: '消毒手部' },
-
-  // 🔵 工具通訊
-  { id: 't1', name: '手電筒', weight: 150, score: 18, type: 4, icon: '🔦', stackable: false, tags: ['light'], desc: '照明' },
-  { id: 't2', name: '哨子', weight: 10, score: 20, type: 4, icon: '📣', stackable: false, tags: ['signal'], desc: '求救' },
-  { id: 't3', name: '收音機', weight: 300, score: 10, type: 4, icon: '📻', stackable: false, tags: ['info'], desc: '聽災情' },
-  { id: 't4', name: '電池', weight: 100, score: 8, type: 4, icon: '🔋', stackable: true, tags: ['power'], desc: '備用電力' },
-  { id: 't5', name: '大垃圾袋', weight: 30, score: 8, type: 4, icon: '🛍️', stackable: true, tags: ['rain', 'water_storage'], desc: '防水萬用' },
-  { id: 't6', name: '行動電源', weight: 250, score: 10, type: 4, icon: '⚡', stackable: false, tags: ['power'], desc: '手機充電' },
-  { id: 't7', name: '瑞士刀', weight: 100, score: 5, type: 4, icon: '🔪', stackable: false, tags: ['tool'], desc: '多功能' },
-  { id: 'x1', name: 'Switch', weight: 400, score: -5, type: 4, icon: '🎮', stackable: true, tags: ['comfort'], desc: '耗電' },
-  { id: 'x7', name: '平板', weight: 500, score: -5, type: 4, icon: '📱', stackable: false, tags: ['comfort'], desc: '易碎' },
-
-  // 🟣 重要文件/個人
-  { id: 'd1', name: '防災卡', weight: 5, score: 25, type: 5, icon: '📝', stackable: false, tags: ['contact'], desc: '聯絡家人' },
-  { id: 'd2', name: '身分證件', weight: 10, score: 15, type: 5, icon: '🆔', stackable: false, tags: ['id'], desc: '證明身分' },
-  { id: 'd3', name: '零錢', weight: 150, score: 8, type: 5, icon: '💰', stackable: false, tags: ['buy'], desc: '投幣電話' },
-  { id: 'd4', name: '全家福', weight: 5, score: 10, type: 5, icon: '👨‍👩‍👧‍👦', stackable: false, tags: ['comfort'], desc: '心靈支柱' },
-  { id: 'x2', name: '大玩偶', weight: 300, score: -2, type: 5, icon: '🧸', stackable: false, tags: ['comfort'], desc: '佔體積' },
-  { id: 'x3', name: '全套漫畫', weight: 1000, score: -5, type: 5, icon: '📚', stackable: true, tags: ['comfort'], desc: '太重' },
-];
-
-const SCENARIO_DB = [
-  // 🕒 時間與光線
-  { id: 'darkness', text: '突然一片漆黑，看不到路！', reqTag: 'light', conditions: { time: 'night' }, success: '打開手電筒，看清楚了！', fail: '太暗了，跌倒受傷...', damage: 20 },
-  
-  // 🌡️ 氣溫與天氣
-  { id: 'freezing', text: '寒流來襲，身體一直發抖...', reqTag: 'warmth', conditions: { season: 'winter' }, success: '用了保暖用品，好暖和！', fail: '好冷...快失溫了...', damage: 30 },
-  { id: 'scorching', text: '太陽好大，曬得頭昏眼花！', reqTag: 'sun', conditions: { season: 'summer' }, success: '戴上帽子遮陽，舒服多了。', fail: '頭好暈...中暑了...', damage: 20 },
-  { id: 'pouring_rain', text: '下大雨了！全身都要濕透了！', reqTag: 'rain', conditions: { disaster: 'flood' }, success: '穿上雨衣，身體乾乾的。', fail: '全身濕透，又濕又冷...', damage: 25 },
-  
-  // 🏚️ 災害特定
-  { id: 'dust_storm', text: '房子倒塌揚起粉塵，好難呼吸！', reqTag: 'dust', conditions: { disaster: 'earthquake' }, success: '戴上口罩，呼吸順暢！', fail: '咳咳咳...吸入灰塵...', damage: 15 },
-  { id: 'debris', text: '路上都是碎玻璃，手可能會割傷。', reqTag: 'protect_hands', conditions: { disaster: 'earthquake' }, success: '戴上手套，安全搬開障礙。', fail: '手被劃傷了，好痛...', damage: 15 },
-  
-  // 🧂 生理需求 (通用)
-  { id: 'thirsty_extreme', text: '走了好久，喉嚨乾得像火燒...', reqTag: 'water', type: 'universal', success: '喝了水，復活了！', fail: '好渴...沒力氣了...', damage: 30 },
-  { id: 'hungry', text: '肚子咕嚕叫，沒力氣走路了。', reqTag: 'food', type: 'universal', success: '吃了東西，又有力氣了！', fail: '好餓...走不動了...', damage: 20 },
-  { id: 'toilet_emergency', text: '糟糕！肚子痛，急需上廁所！', reqTag: 'toilet', type: 'universal', success: '呼～好險有帶衛生紙。', fail: '慘了...沒有紙... (崩潰)', damage: 15 },
-  { id: 'small_injury', text: '哎呀！被路邊的樹枝刮傷流血！', reqTag: 'injury', type: 'universal', success: '用急救包消毒包紮，沒事。', fail: '傷口沒處理，好痛...', damage: 20 },
-  
-  // 🧠 心理與社交 (通用)
-  { id: 'panic', text: '心裡好害怕，好想回家...', reqTag: 'comfort', type: 'universal', success: '抱著熟悉的東西，平靜了。', fail: '好害怕...嗚嗚嗚...', damage: 15 },
-  { id: 'lost_contact', text: '到了收容所，找不到爸爸媽媽...', reqTag: 'contact', type: 'universal', success: '看防災卡打電話，聯絡上了！', fail: '沒有電話，怎麼辦... (焦慮)', damage: 25 },
-];
-
-const CATEGORIES = { 1: '飲食', 2: '衣物', 3: '醫療', 4: '工具', 5: '文件' };
-const PROFILE_CONFIG = {
-  grades: [
-    { id: 'low', label: '低年級', weightLimit: 3000 },
-    { id: 'mid', label: '中年級', weightLimit: 4500 },
-    { id: 'high', label: '高年級', weightLimit: 6000 },
-  ],
-  seasons: [
-    { id: 'summer', label: '夏天', icon: <Sun size={28}/> },
-    { id: 'winter', label: '冬天', icon: <Snowflake size={28}/> },
-  ],
-  times: [
-    { id: 'day', label: '白天', icon: <Sun size={28}/> },
-    { id: 'night', label: '晚上', icon: <Moon size={28}/> },
-  ],
-  disasters: [
-    { id: 'earthquake', label: '地震', icon: '🏚️' },
-    { id: 'flood', label: '水災', icon: '🌊' },
-  ]
-};
-
-const HANDWRITTEN_FONT = { fontFamily: '"Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif' };
-
-// --- 小組件 ---
-
-const StatBar = ({ icon, value, color, max = 100 }) => (
-  <div className="flex items-center gap-1.5 w-full">
-    <div className="flex items-center text-white drop-shadow-md">
-      {icon}
-    </div>
-    <div className="flex-1 h-4 md:h-5 bg-gray-300 rounded-full overflow-hidden border-2 border-black shadow-inner">
-      <div 
-        className={`h-full transition-all duration-500 ${color}`} 
-        style={{ width: `${Math.max(0, Math.min(100, (value/max)*100))}%` }}
-      >
-      </div>
-    </div>
-    <span className="text-xs md:text-sm font-black text-white drop-shadow-md w-8 text-right">{value}</span>
-  </div>
-);
-
-// --- 主程式 ---
-
-export default function SurvivalGame() {
-  const [scene, setScene] = useState('menu'); 
-  const [profile, setProfile] = useState({ grade: 'mid', season: 'winter', time: 'night', disaster: 'earthquake' });
-  const [inventory, setInventory] = useState({});
-  const [activeTab, setActiveTab] = useState(0);
-  
-  // 旅程狀態
-  const [hp, setHp] = useState(100);
-  const [score, setScore] = useState(0); // 新增分數
-  const [progress, setProgress] = useState(0); 
-  const [journeyEvents, setJourneyEvents] = useState([]); 
-  const [currentEventIndex, setCurrentEventIndex] = useState(0);
-  const [journeyLog, setJourneyLog] = useState([]);
-  const [showEventModal, setShowEventModal] = useState(false);
-  const [eventFeedback, setEventFeedback] = useState(null);
-
-  const currentMaxWeight = PROFILE_CONFIG.grades.find(g => g.id === profile.grade)?.weightLimit || 4500;
-  
-  const calculateWeight = () => {
-    return Object.entries(inventory).reduce((acc, [id, count]) => {
-      const item = ITEMS_DB.find(i => i.id === id);
-      return acc + (item ? item.weight * count : 0);
-    }, 0);
-  };
-  const currentWeight = calculateWeight();
-
-  // --- 遊戲邏輯 ---
-
-  const handleItemToggle = (item, action) => {
-    if (action === 'add') {
-      setInventory(prev => {
-        const count = prev[item.id] || 0;
-        if (count >= 5) return prev;
-        return { ...prev, [item.id]: count + 1 };
-      });
-    } else {
-      setInventory(prev => {
-        const count = prev[item.id] || 0;
-        if (count <= 0) return prev;
-        const next = { ...prev, [item.id]: count - 1 };
-        if (next[item.id] === 0) delete next[item.id];
-        return next;
-      });
-    }
-  };
-
-  const generateEvents = () => {
-    let pool = [];
-    SCENARIO_DB.forEach(evt => {
-      if (evt.type === 'universal') {
-        pool.push(evt);
-      } else if (evt.conditions) {
-        let match = true;
-        if (evt.conditions.time && evt.conditions.time !== profile.time) match = false;
-        if (evt.conditions.season && evt.conditions.season !== profile.season) match = false;
-        if (evt.conditions.disaster && evt.conditions.disaster !== profile.disaster) match = false;
-        if (match) pool.push(evt);
-      }
-    });
-
-    const priorityEvents = pool.filter(e => e.type !== 'universal').sort(() => Math.random() - 0.5);
-    const universalEvents = pool.filter(e => e.type === 'universal').sort(() => Math.random() - 0.5);
-    let finalEvents = [...priorityEvents, ...universalEvents].slice(0, 5);
-    while(finalEvents.length < 5) finalEvents.push(SCENARIO_DB.find(e => e.id === 'thirsty_extreme'));
-    return finalEvents;
-  };
-
-  const startJourney = () => {
-    if (currentWeight > currentMaxWeight) {
-      alert(`背包太重了！請減到 ${currentMaxWeight}g 以下。`);
-      return;
-    }
-    if (Object.keys(inventory).length === 0) {
-      alert("背包是空的，這樣很危險喔！");
-      return;
-    }
-
-    const events = generateEvents();
-    setJourneyEvents(events);
-    setHp(100);
-    setScore(0);
-    setProgress(0);
-    setCurrentEventIndex(0);
-    setJourneyLog([]);
-    setShowEventModal(false);
-    setEventFeedback(null);
-    setScene('journey');
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波波熊的終極防災挑戰</title>
     
-    advanceJourney(0, 0, events);
-  };
+    <!-- 引入 Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  const advanceJourney = (targetIndex, currentProg, eventsList) => {
-    if (targetIndex >= 5) {
-      setProgress(100);
-      // 抵達終點，加分
-      setScore(prev => prev + hp); // 剩餘體力轉分數
-      setTimeout(() => setScene('report'), 1500);
-      return;
-    }
+    <!-- 引入 Babel (將 JSX 轉為 JavaScript) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    const eventProgressPoint = (targetIndex + 1) * 18; 
-    const walk = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= eventProgressPoint) {
-          clearInterval(walk);
-          setCurrentEventIndex(targetIndex);
-          setShowEventModal(true);
-          return eventProgressPoint;
+    <!-- 設定 Import Map: 強制共用 React 實例 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?deps=react@18.2.0",
+            "lucide-react": "https://esm.sh/lucide-react@0.468.0?deps=react@18.2.0"
         }
-        return prev + 0.5;
-      });
-    }, 30);
-  };
-
-  const handleUseItem = (item) => {
-    const currentEvent = journeyEvents[currentEventIndex];
-    if (!currentEvent) return;
-
-    const isCorrect = item.tags.includes(currentEvent.reqTag);
-
-    if (isCorrect) {
-      setEventFeedback({ type: 'success', text: currentEvent.success });
-      setScore(prev => prev + 100); // 答對加分！
-      
-      if (['water', 'food', 'toilet', 'power'].some(t => item.tags.includes(t))) {
-         setInventory(prev => ({ ...prev, [item.id]: Math.max(0, prev[item.id] - 1) }));
-      }
-      
-      setTimeout(() => {
-        setShowEventModal(false);
-        setEventFeedback(null);
-        advanceJourney(currentEventIndex + 1, progress, journeyEvents);
-      }, 2000);
-    } else {
-      setEventFeedback({ type: 'retry', text: '這個好像沒用...再試試別的？', damage: 0 });
-      setTimeout(() => setEventFeedback(null), 1500);
     }
-  };
+    </script>
 
-  const handleNoItem = () => {
-    const currentEvent = journeyEvents[currentEventIndex];
-    setEventFeedback({ type: 'fail', text: currentEvent.fail });
-    setHp(prev => Math.max(0, prev - currentEvent.damage));
-    setJourneyLog(prev => [...prev, { event: currentEvent.text, result: 'fail', damage: currentEvent.damage }]);
-
-    setTimeout(() => {
-      setShowEventModal(false);
-      setEventFeedback(null);
-      if (hp - currentEvent.damage <= 0) {
-        setScene('report');
-      } else {
-        advanceJourney(currentEventIndex + 1, progress, journeyEvents);
-      }
-    }, 2500);
-  };
-
-  // --- 畫面 ---
-
-  // 1. 主選單
-  if (scene === 'menu') {
-    return (
-      <div className="h-screen w-full bg-yellow-400 flex flex-col items-center justify-center p-4 relative overflow-hidden" style={HANDWRITTEN_FONT}>
-        <div className="absolute top-10 left-10 text-8xl animate-bounce opacity-20">🎒</div>
-        <div className="absolute bottom-10 right-10 text-8xl animate-pulse opacity-20">🔦</div>
+    <!-- 自訂字體與動畫樣式 -->
+    <style>
+        body {
+            font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", "微軟正黑體", sans-serif;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        <div className="bg-white p-8 md:p-12 rounded-[2rem] border-8 border-black shadow-xl text-center max-w-lg w-full z-10 transform -rotate-1 flex flex-col items-center">
-          <div className="text-8xl md:text-9xl mb-4 animate-bounce inline-block">🐻</div>
-          <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-wider text-gray-900 leading-tight">波波熊的<br/><span className="text-red-500">防災挑戰</span></h1>
-          <p className="text-xl md:text-2xl font-bold text-gray-500 mb-8">準備好逃生背包了嗎？</p>
-          
-          <button onClick={() => setScene('setup')} className="w-full bg-blue-500 hover:bg-blue-600 text-white border-4 border-black text-2xl md:text-3xl font-black py-4 md:py-5 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition active:translate-y-0 active:shadow-none flex items-center justify-center gap-3">
-            <Play fill="currentColor" size={32}/> 開始挑戰
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. 設定頁
-  if (scene === 'setup') {
-    return (
-      <div className="h-screen w-full bg-sky-100 flex flex-col p-4 overflow-hidden" style={HANDWRITTEN_FONT}>
-        <div className="flex-1 bg-white rounded-[2rem] border-4 border-black shadow-xl p-4 md:p-8 flex flex-col overflow-y-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-6 text-center flex items-center justify-center gap-2">
-            <Info size={32}/> 設定情境
-          </h2>
-          
-          <div className="space-y-6 flex-1">
-            {/* 災害 */}
-            <div>
-              <h3 className="text-xl font-bold mb-3 border-l-4 border-yellow-400 pl-2">發生什麼事？</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {PROFILE_CONFIG.disasters.map(d => (
-                  <button key={d.id} onClick={() => setProfile({...profile, disaster: d.id})}
-                    className={`p-3 md:p-4 rounded-xl border-2 text-center transition-all ${profile.disaster === d.id ? 'bg-red-100 border-red-500 ring-2 ring-red-300' : 'bg-gray-50 border-gray-200'}`}>
-                    <div className="text-3xl md:text-4xl mb-1">{d.icon}</div>
-                    <div className="font-black text-lg md:text-xl">{d.label}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 時間季節 */}
-            <div>
-              <h3 className="text-xl font-bold mb-3 border-l-4 border-yellow-400 pl-2">環境狀況？</h3>
-              <div className="flex gap-3 mb-3">
-                 {PROFILE_CONFIG.seasons.map(s => (
-                   <button key={s.id} onClick={() => setProfile({...profile, season: s.id})}
-                     className={`flex-1 p-2 rounded-xl border-2 flex items-center justify-center gap-2 font-bold text-lg transition-all ${profile.season === s.id ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-200'}`}>
-                     {s.icon} {s.label}
-                   </button>
-                 ))}
-              </div>
-              <div className="flex gap-3">
-                 {PROFILE_CONFIG.times.map(t => (
-                   <button key={t.id} onClick={() => setProfile({...profile, time: t.id})}
-                     className={`flex-1 p-2 rounded-xl border-2 flex items-center justify-center gap-2 font-bold text-lg transition-all ${profile.time === t.id ? 'bg-indigo-100 border-indigo-500' : 'bg-gray-50 border-gray-200'}`}>
-                     {t.icon} {t.label}
-                   </button>
-                 ))}
-              </div>
-            </div>
-
-            {/* 年級 */}
-            <div>
-              <h3 className="text-xl font-bold mb-3 border-l-4 border-yellow-400 pl-2">你的年級？</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {PROFILE_CONFIG.grades.map(g => (
-                  <button key={g.id} onClick={() => setProfile({...profile, grade: g.id})}
-                    className={`p-2 rounded-xl border-2 font-black text-lg transition-all ${profile.grade === g.id ? 'bg-green-100 border-green-500' : 'bg-gray-50 border-gray-200'}`}>
-                    {g.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <button onClick={() => setScene('packing')}
-            className="w-full mt-4 bg-black text-white border-4 border-gray-600 text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-            <Backpack size={28}/> 設定完成，去打包！
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 3. 打包頁 (RWD優化)
-  if (scene === 'packing') {
-    return (
-      <div className="h-screen w-full bg-[#FFF8E1] flex flex-col overflow-hidden" style={HANDWRITTEN_FONT}>
-        {/* Header */}
-        <div className="bg-white border-b-4 border-black px-4 py-3 shadow-md z-10 flex flex-col gap-2 shrink-0">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-4xl animate-bounce">🏠</span>
-              <div>
-                <div className="font-black text-xl md:text-2xl leading-none text-red-600">緊急撤離！</div>
-                <div className="text-xs md:text-sm font-bold text-gray-500 mt-0.5">
-                  {PROFILE_CONFIG.disasters.find(d=>d.id===profile.disaster).label}/{profile.season==='summer'?'夏':'冬'}/{profile.time==='day'?'日':'夜'}
-                </div>
-              </div>
-            </div>
-            <button 
-              onClick={startJourney}
-              className="bg-red-500 hover:bg-red-600 text-white border-2 border-black font-black px-4 py-2 md:px-6 md:py-2 rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-y-1 active:shadow-none animate-pulse text-lg md:text-xl transition"
-            >
-              出發！
-            </button>
-          </div>
-          
-          {/* 負重條 */}
-          <div className="relative pt-1">
-            <div className="h-6 bg-gray-200 rounded-full border-2 border-black overflow-hidden">
-              <div 
-                className={`h-full transition-all duration-300 ${currentWeight > currentMaxWeight ? 'bg-red-500' : 'bg-green-500'}`}
-                style={{ width: `${Math.min(100, (currentWeight/currentMaxWeight)*100)}%` }}
-              ></div>
-            </div>
-            <div className="flex justify-between text-xs md:text-sm font-black mt-1">
-              <span>🎒 背包重量</span>
-              <span className={currentWeight > currentMaxWeight ? 'text-red-600' : 'text-gray-600'}>{currentWeight} / {currentMaxWeight}g</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 物品區 */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex overflow-x-auto p-2 gap-2 bg-[#FFECB3] flex-shrink-0 scrollbar-hide">
-             <button onClick={()=>setActiveTab(0)} className={`px-4 py-2 rounded-t-xl border-2 border-b-0 font-black text-base whitespace-nowrap ${activeTab===0 ? 'bg-black text-white border-black h-12 mt-0' : 'bg-white border-gray-400 h-10 mt-2 text-gray-500'}`}>全部</button>
-             {Object.entries(CATEGORIES).map(([k, v]) => (
-               <button key={k} onClick={()=>setActiveTab(Number(k))} className={`px-4 py-2 rounded-t-xl border-2 border-b-0 font-black text-base whitespace-nowrap ${activeTab===Number(k) ? 'bg-black text-white border-black h-12 mt-0' : 'bg-white border-gray-400 h-10 mt-2 text-gray-500'}`}>{v}</button>
-             ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 content-start bg-[#FFFDE7]">
-            {ITEMS_DB.filter(i => activeTab === 0 || i.type === activeTab).map(item => (
-              <div key={item.id} className="bg-white border-2 border-black rounded-2xl p-2 flex flex-col justify-between shadow-sm relative group cursor-pointer active:scale-95 transition min-h-[140px]" onClick={() => handleItemToggle(item, 'add')}>
-                <div className="text-center">
-                  <div className="text-5xl mb-1 transform group-hover:scale-110 transition filter drop-shadow-sm">{item.icon}</div>
-                  <div className="font-black text-base text-gray-800 leading-tight mb-1">{item.name}</div>
-                  <div className="text-[10px] text-gray-500 font-bold bg-gray-100 rounded-full inline-block px-2">{item.weight}g</div>
-                </div>
-
-                {inventory[item.id] > 0 ? (
-                  <div className="flex items-center justify-center gap-2 bg-blue-100 rounded-lg p-1 mt-auto border border-blue-300">
-                    <button onClick={(e) => {e.stopPropagation(); handleItemToggle(item, 'sub')}} className="w-6 h-6 flex items-center justify-center bg-white rounded-full border border-blue-300 text-blue-600"><Minus size={14} strokeWidth={3}/></button>
-                    <span className="font-black text-lg text-blue-800">{inventory[item.id]}</span>
-                    <button onClick={(e) => {e.stopPropagation(); handleItemToggle(item, 'add')}} className="w-6 h-6 flex items-center justify-center bg-white rounded-full border border-blue-300 text-blue-600"><RefreshCw size={14} strokeWidth={3} className="rotate-45"/></button>
-                  </div>
-                ) : (
-                  <button className="w-full bg-gray-50 border-2 border-gray-300 border-dashed rounded-lg py-1.5 font-bold text-gray-400 text-sm mt-auto">
-                    放入
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 4. 旅程頁
-  if (scene === 'journey') {
-    const currentEvent = journeyEvents[currentEventIndex];
-
-    return (
-      <div className={`h-screen w-full flex flex-col relative transition-colors duration-1000 overflow-hidden ${profile.time === 'night' ? 'bg-slate-900 text-white' : 'bg-sky-300 text-black'}`} style={HANDWRITTEN_FONT}>
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(-5%); }
+            50% { transform: translateY(5%); }
+        }
+        .animate-bounce-slow { animation: bounce-slow 3s infinite; }
         
-        {/* 背景 */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-           {profile.time === 'day' && <div className="absolute top-10 right-10 text-yellow-400 animate-spin-slow"><Sun size={80}/></div>}
-           {profile.time === 'night' && <div className="absolute top-10 right-10 text-yellow-100"><Moon size={60}/></div>}
-           {profile.season === 'winter' && <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]"></div>}
-           {profile.disaster === 'flood' && <div className="absolute bottom-0 w-full h-1/2 bg-blue-500/30 backdrop-blur-sm"></div>}
-           <div className="absolute bottom-0 w-full h-1/3 bg-gradient-to-t from-gray-700 to-transparent opacity-50"></div>
-        </div>
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow { animation: spin-slow 10s linear infinite; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.5s ease-in-out infinite; }
+        
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes slide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-slide { animation: slide 20s linear infinite; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-        {/* 狀態列 */}
-        <div className="relative z-10 p-3 md:p-4 flex justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/20 shadow-lg">
-          <div className="flex flex-col w-1/2 md:w-1/3">
-             <div className="w-full h-5 md:h-6 bg-gray-300 rounded-full overflow-hidden border-2 border-black shadow-inner relative mt-1">
-                <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${progress}%` }}></div>
-                <div className="absolute top-1/2 -translate-y-1/2 transition-all duration-300 text-xl md:text-2xl filter drop-shadow-md" style={{ left: `calc(${progress}% - 10px)` }}>🐻</div>
-             </div>
-          </div>
-          <div className="w-1/3 flex flex-col gap-1">
-             <StatBar icon={<Heart size={24} className="text-red-500 fill-current"/>} value={hp} color="bg-red-500" />
-             <StatBar icon={<Star size={24} className="text-yellow-400 fill-current"/>} value={score} color="bg-yellow-400" max={600} />
-          </div>
-        </div>
+    <!-- 遊戲主程式碼 (使用 module 模式) -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Trophy, AlertTriangle, CheckCircle, XCircle, Backpack, Info, RefreshCw, 
+            Minus, Hand, Sun, Snowflake, User, Calendar, Ruler, Star, Heart, Zap, 
+            Medal, Moon, CloudRain, Wind, Battery, MapPin, Home, ArrowRight, Play, 
+            ThermometerSun, Umbrella 
+        } from 'lucide-react';
 
-        {/* 中央舞台 */}
-        <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
-           
-           {!showEventModal && (
-             <div className="text-center animate-bounce-slow">
-               <div className="text-[8rem] md:text-[10rem] transform scale-x-[-1] filter drop-shadow-2xl">🐻</div>
-               <div className="font-black text-2xl md:text-3xl mt-4 bg-white/90 px-6 py-2 rounded-full text-black inline-block shadow-xl border-4 border-black">
-                 趕路中... {Math.round(progress)}%
-               </div>
-             </div>
-           )}
+        // --- 資料設定 ---
+        const ITEMS_DB = [
+            // 🟢 飲食與水
+            { id: 'f1', name: '瓶裝水', weight: 650, score: 20, type: 1, icon: '💧', stackable: true, tags: ['water'], desc: '生命之源' },
+            { id: 'f2', name: '營養口糧', weight: 100, score: 10, type: 1, icon: '🍪', stackable: true, tags: ['food'], desc: '熱量高' },
+            { id: 'f3', name: '易開罐頭', weight: 350, score: 8, type: 1, icon: '🥫', stackable: true, tags: ['food'], desc: '耐放' },
+            { id: 'f4', name: '巧克力', weight: 50, score: 10, type: 1, icon: '🍫', stackable: true, tags: ['food', 'comfort'], desc: '補血糖心情' },
+            { id: 'f5', name: '泡麵', weight: 100, score: 5, type: 1, icon: '🍜', stackable: true, tags: ['food'], desc: '需熱水' },
+            { id: 'f6', name: '棒棒糖', weight: 20, score: 5, type: 1, icon: '🍭', stackable: true, tags: ['comfort'], desc: '安撫用' },
+            { id: 'x5', name: '大罐汽水', weight: 1200, score: -5, type: 1, icon: '🥤', stackable: true, tags: [], desc: '太重不解渴' },
+            { id: 'x6', name: '洋芋片', weight: 150, score: -2, type: 1, icon: '🥔', stackable: true, tags: [], desc: '佔空間' },
 
-           {/* 事件彈窗 */}
-           {showEventModal && currentEvent && (
-             <div className="bg-white text-black p-6 md:p-8 rounded-[2rem] border-[6px] border-black shadow-[0_20px_60px_rgba(0,0,0,0.6)] max-w-xl w-full animate-pop-in z-50 flex flex-col max-h-[80vh]">
-               
-               {!eventFeedback ? (
-                 <>
-                   <div className="text-center mb-4 shrink-0">
-                     <div className="text-6xl md:text-8xl mb-2 animate-shake">
-                        {currentEvent.conditions?.time === 'night' ? '🌑' : 
-                         currentEvent.conditions?.season === 'winter' ? '🥶' :
-                         currentEvent.conditions?.disaster === 'flood' ? '🌧️' : '⚠️'}
-                     </div>
-                     <h2 className="text-2xl md:text-3xl font-black mb-2 text-red-600 leading-tight">{currentEvent.text}</h2>
-                     <p className="text-gray-500 font-bold text-sm md:text-base bg-gray-100 inline-block px-3 py-1 rounded-full">請點擊物品使用：</p>
-                   </div>
-                   
-                   {/* 互動區 */}
-                   <div className="bg-gray-100 p-3 rounded-2xl overflow-y-auto grid grid-cols-3 gap-2 border-[3px] border-gray-300 shadow-inner flex-1 min-h-[150px]">
-                      {Object.keys(inventory).length === 0 && <div className="col-span-3 text-center text-gray-400 py-10 font-bold">背包空空的...</div>}
-                      {Object.keys(inventory).map(id => {
-                        const item = ITEMS_DB.find(i => i.id === id);
-                        if (!item) return null;
-                        return (
-                          <div key={id} onClick={() => handleUseItem(item)} 
-                            className="bg-white border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 shadow-sm">
-                             <span className="text-3xl md:text-4xl mb-1">{item.icon}</span>
-                             <span className="text-xs font-black truncate w-full text-center">{item.name}</span>
-                          </div>
-                        )
-                      })}
-                   </div>
+            // 🟡 衣物保暖
+            { id: 'c1', name: '輕便雨衣', weight: 50, score: 15, type: 2, icon: '☔', stackable: true, tags: ['rain', 'warmth', 'wind'], desc: '防雨防風' },
+            { id: 'c2', name: '保暖鋁箔毯', weight: 50, score: 15, type: 2, icon: '⛺', stackable: true, tags: ['warmth', 'sleep'], desc: '防失溫神器' },
+            { id: 'c3', name: '襪子', weight: 40, score: 8, type: 2, icon: '🧦', stackable: true, tags: ['warmth', 'hygiene'], desc: '保暖乾燥' },
+            { id: 'c4', name: '暖暖包', weight: 30, score: 8, type: 2, icon: '🔥', stackable: true, tags: ['warmth'], desc: '禦寒' },
+            { id: 'c5', name: '毛巾', weight: 100, score: 8, type: 2, icon: '🧣', stackable: true, tags: ['hygiene', 'warmth'], desc: '清潔保暖' },
+            { id: 'c6', name: '工作手套', weight: 50, score: 10, type: 2, icon: '🧤', stackable: false, tags: ['protect_hands'], desc: '保護雙手' },
+            { id: 'c7', name: '羽絨衣', weight: 800, score: 5, type: 2, icon: '🧥', stackable: false, tags: ['warmth'], desc: '暖但佔位' },
+            { id: 'c8', name: '遮陽帽', weight: 60, score: 8, type: 2, icon: '🧢', stackable: false, tags: ['sun'], desc: '防曬' },
+            { id: 'c9', name: '換洗衣物', weight: 200, score: 8, type: 2, icon: '👕', stackable: false, tags: ['hygiene'], desc: '保持清潔' },
 
-                   <button onClick={handleNoItem} className="w-full mt-4 text-gray-400 text-base font-bold underline hover:text-red-500 shrink-0">
-                     我沒有可以用的東西... (扣血)
-                   </button>
-                 </>
-               ) : (
-                 <div className="text-center py-10 flex flex-col items-center justify-center h-full">
-                    <div className="text-8xl mb-6 animate-bounce">{eventFeedback.type === 'success' ? '✅' : '❌'}</div>
-                    <h3 className={`text-3xl md:text-4xl font-black mb-4 ${eventFeedback.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                      {eventFeedback.type === 'success' ? '解決了！+100分' : '糟了！'}
-                    </h3>
-                    <p className="font-bold text-gray-700 text-xl leading-relaxed">{eventFeedback.text}</p>
-                    {eventFeedback.type === 'retry' && <div className="mt-4 text-orange-500 font-bold animate-pulse">正在重新思考...</div>}
-                 </div>
-               )}
-             </div>
-           )}
-        </div>
+            // 🔴 醫療衛生
+            { id: 'm1', name: '個人藥品', weight: 20, score: 20, type: 3, icon: '💊', stackable: false, tags: ['medical'], desc: '救命藥' },
+            { id: 'm2', name: '急救包', weight: 150, score: 12, type: 3, icon: '🏥', stackable: false, tags: ['medical', 'injury'], desc: '外傷處理' },
+            { id: 'm3', name: '口罩', weight: 20, score: 10, type: 3, icon: '😷', stackable: true, tags: ['hygiene', 'dust'], desc: '防塵防毒' },
+            { id: 'm4', name: '濕紙巾', weight: 150, score: 8, type: 3, icon: '🧻', stackable: true, tags: ['hygiene', 'toilet'], desc: '清潔身體' },
+            { id: 'm5', name: '衛生紙', weight: 100, score: 8, type: 3, icon: '🧻', stackable: true, tags: ['hygiene', 'toilet'], desc: '如廁必備' },
+            { id: 'm6', name: '衛生棉', weight: 50, score: 8, type: 3, icon: '🌸', stackable: true, tags: ['hygiene', 'injury'], desc: '生理/止血' },
+            { id: 'm7', name: '乾洗手', weight: 80, score: 8, type: 3, icon: '🧼', stackable: false, tags: ['hygiene'], desc: '消毒手部' },
 
-        {/* 底部裝飾 */}
-        <div className="h-16 md:h-24 bg-gray-800 w-full relative z-0 flex items-end overflow-hidden border-t-4 border-black shrink-0">
-           <div className="flex gap-40 animate-slide text-4xl md:text-6xl opacity-50 absolute bottom-4 w-[200%]">
-              <span>🏚️</span><span>🌲</span><span>🌊</span><span>🚑</span><span>🏚️</span><span>🌲</span><span>🌊</span>
-           </div>
-        </div>
-      </div>
-    );
-  }
+            // 🔵 工具通訊
+            { id: 't1', name: '手電筒', weight: 150, score: 18, type: 4, icon: '🔦', stackable: false, tags: ['light'], desc: '照明' },
+            { id: 't2', name: '哨子', weight: 10, score: 20, type: 4, icon: '📣', stackable: false, tags: ['signal'], desc: '求救' },
+            { id: 't3', name: '收音機', weight: 300, score: 10, type: 4, icon: '📻', stackable: false, tags: ['info'], desc: '聽災情' },
+            { id: 't4', name: '電池', weight: 100, score: 8, type: 4, icon: '🔋', stackable: true, tags: ['power'], desc: '備用電力' },
+            { id: 't5', name: '大垃圾袋', weight: 30, score: 8, type: 4, icon: '🛍️', stackable: true, tags: ['rain', 'water_storage'], desc: '防水萬用' },
+            { id: 't6', name: '行動電源', weight: 250, score: 10, type: 4, icon: '⚡', stackable: false, tags: ['power'], desc: '手機充電' },
+            { id: 't7', name: '瑞士刀', weight: 100, score: 5, type: 4, icon: '🔪', stackable: false, tags: ['tool'], desc: '多功能' },
+            { id: 'x1', name: 'Switch', weight: 400, score: -5, type: 4, icon: '🎮', stackable: true, tags: ['comfort'], desc: '耗電' },
+            { id: 'x7', name: '平板', weight: 500, score: -5, type: 4, icon: '📱', stackable: false, tags: ['comfort'], desc: '易碎' },
 
-  // 5. 結算報告
-  if (scene === 'report') {
-    const isSuccess = hp > 0;
-    const finalScore = score;
-    let rank = 'C';
-    if (finalScore >= 500) rank = 'S';
-    else if (finalScore >= 400) rank = 'A';
-    else if (finalScore >= 300) rank = 'B';
-    
-    return (
-      <div className="h-screen w-full bg-indigo-900 flex flex-col items-center justify-center p-4 relative" style={HANDWRITTEN_FONT}>
-         {isSuccess && <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 bg-[url('https://www.transparenttextures.com/patterns/confetti.png')]"></div>}
-         
-         <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border-8 border-black shadow-2xl max-w-2xl w-full text-center z-10 relative flex flex-col max-h-screen">
-           <div className="text-7xl md:text-9xl -mt-16 md:-mt-20 mb-4 filter drop-shadow-lg">
-             {isSuccess ? '🏕️' : '🚑'}
-           </div>
-           
-           <h2 className={`text-4xl md:text-6xl font-black mb-2 ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
-             {isSuccess ? '抵達收容所！' : '任務失敗...'}
-           </h2>
-           
-           <div className="flex justify-center items-center gap-4 my-4">
-              <div className="bg-yellow-100 p-4 rounded-2xl border-4 border-yellow-400">
-                 <div className="text-xs font-bold text-gray-500">最終得分</div>
-                 <div className="text-4xl font-black text-yellow-600">{finalScore}</div>
-              </div>
-              <div className="bg-blue-100 p-4 rounded-2xl border-4 border-blue-400">
-                 <div className="text-xs font-bold text-gray-500">生存評價</div>
-                 <div className="text-4xl font-black text-blue-600">{rank}</div>
-              </div>
-           </div>
+            // 🟣 重要文件/個人
+            { id: 'd1', name: '防災卡', weight: 5, score: 25, type: 5, icon: '📝', stackable: false, tags: ['contact'], desc: '聯絡家人' },
+            { id: 'd2', name: '身分證件', weight: 10, score: 15, type: 5, icon: '🆔', stackable: false, tags: ['id'], desc: '證明身分' },
+            { id: 'd3', name: '零錢', weight: 150, score: 8, type: 5, icon: '💰', stackable: false, tags: ['buy'], desc: '投幣電話' },
+            { id: 'd4', name: '全家福', weight: 5, score: 10, type: 5, icon: '👨‍👩‍👧‍👦', stackable: false, tags: ['comfort'], desc: '心靈支柱' },
+            { id: 'x2', name: '大玩偶', weight: 300, score: -2, type: 5, icon: '🧸', stackable: false, tags: ['comfort'], desc: '佔體積' },
+            { id: 'x3', name: '全套漫畫', weight: 1000, score: -5, type: 5, icon: '📚', stackable: true, tags: ['comfort'], desc: '太重' },
+        ];
 
-           <div className="bg-gray-100 rounded-3xl p-4 text-left mb-6 border-[3px] border-gray-300 flex-1 overflow-y-auto">
-             <div className="space-y-2">
-               {journeyLog.length === 0 && <span className="text-gray-400 text-lg font-bold">一路上非常順利，沒有受傷！</span>}
-               {journeyLog.map((log, i) => (
-                 <div key={i} className="text-red-700 font-bold flex items-start bg-red-50 p-2 rounded-xl border border-red-200">
-                    <XCircle size={20} className="mr-2 flex-shrink-0 mt-0.5"/> 
-                    <div>
-                      <div>{log.event}</div>
-                      <div className="text-xs opacity-70">扣除 {log.damage} HP</div>
+        const SCENARIO_DB = [
+            // 🕒 時間與光線
+            { id: 'darkness', text: '突然一片漆黑，看不到路！', reqTag: 'light', conditions: { time: 'night' }, success: '打開手電筒，看清楚了！', fail: '太暗了，跌倒受傷...', damage: 20 },
+            
+            // 🌡️ 氣溫與天氣
+            { id: 'freezing', text: '寒流來襲，身體一直發抖...', reqTag: 'warmth', conditions: { season: 'winter' }, success: '用了保暖用品，好暖和！', fail: '好冷...快失溫了...', damage: 30 },
+            { id: 'scorching', text: '太陽好大，曬得頭昏眼花！', reqTag: 'sun', conditions: { season: 'summer' }, success: '戴上帽子遮陽，舒服多了。', fail: '頭好暈...中暑了...', damage: 20 },
+            { id: 'pouring_rain', text: '下大雨了！全身都要濕透了！', reqTag: 'rain', conditions: { disaster: 'flood' }, success: '穿上雨衣，身體乾乾的。', fail: '全身濕透，又濕又冷...', damage: 25 },
+            
+            // 🏚️ 災害特定
+            { id: 'dust_storm', text: '房子倒塌揚起粉塵，好難呼吸！', reqTag: 'dust', conditions: { disaster: 'earthquake' }, success: '戴上口罩，呼吸順暢！', fail: '咳咳咳...吸入灰塵...', damage: 15 },
+            { id: 'debris', text: '路上都是碎玻璃，手可能會割傷。', reqTag: 'protect_hands', conditions: { disaster: 'earthquake' }, success: '戴上手套，安全搬開障礙。', fail: '手被劃傷了，好痛...', damage: 15 },
+            
+            // 🧂 生理需求 (通用)
+            { id: 'thirsty_extreme', text: '走了好久，喉嚨乾得像火燒...', reqTag: 'water', type: 'universal', success: '喝了水，復活了！', fail: '好渴...沒力氣了...', damage: 30 },
+            { id: 'hungry', text: '肚子咕嚕叫，沒力氣走路了。', reqTag: 'food', type: 'universal', success: '吃了東西，又有力氣了！', fail: '好餓...走不動了...', damage: 20 },
+            { id: 'toilet_emergency', text: '糟糕！肚子痛，急需上廁所！', reqTag: 'toilet', type: 'universal', success: '呼～好險有帶衛生紙。', fail: '慘了...沒有紙... (崩潰)', damage: 15 },
+            { id: 'small_injury', text: '哎呀！被路邊的樹枝刮傷流血！', reqTag: 'injury', type: 'universal', success: '用急救包消毒包紮，沒事。', fail: '傷口沒處理，好痛...', damage: 20 },
+            
+            // 🧠 心理與社交 (通用)
+            { id: 'panic', text: '心裡好害怕，好想回家...', reqTag: 'comfort', type: 'universal', success: '抱著熟悉的東西，平靜了。', fail: '好害怕...嗚嗚嗚...', damage: 15 },
+            { id: 'lost_contact', text: '到了收容所，找不到爸爸媽媽...', reqTag: 'contact', type: 'universal', success: '看防災卡打電話，聯絡上了！', fail: '沒有電話，怎麼辦... (焦慮)', damage: 25 },
+        ];
+
+        const CATEGORIES = { 1: '飲食', 2: '衣物', 3: '醫療', 4: '工具', 5: '文件' };
+        const PROFILE_CONFIG = {
+            grades: [
+                { id: 'low', label: '低年級', weightLimit: 3000 },
+                { id: 'mid', label: '中年級', weightLimit: 4500 },
+                { id: 'high', label: '高年級', weightLimit: 6000 },
+            ],
+            seasons: [
+                { id: 'summer', label: '夏天', icon: <Sun size={28}/> },
+                { id: 'winter', label: '冬天', icon: <Snowflake size={28}/> },
+            ],
+            times: [
+                { id: 'day', label: '白天', icon: <Sun size={28}/> },
+                { id: 'night', label: '晚上', icon: <Moon size={28}/> },
+            ],
+            disasters: [
+                { id: 'earthquake', label: '地震', icon: '🏚️' },
+                { id: 'flood', label: '水災', icon: '🌊' },
+            ]
+        };
+
+        const StatBar = ({ icon, value, color, max = 100 }) => (
+            <div className="flex items-center gap-1.5 w-full">
+                <div className="flex items-center text-white drop-shadow-md">
+                    {icon}
+                </div>
+                <div className="flex-1 h-4 md:h-5 bg-gray-300 rounded-full overflow-hidden border-2 border-black shadow-inner">
+                    <div 
+                        className={`h-full transition-all duration-500 ${color}`} 
+                        style={{ width: `${Math.max(0, Math.min(100, (value/max)*100))}%` }}
+                    >
                     </div>
-                 </div>
-               ))}
-             </div>
-           </div>
+                </div>
+                <span className="text-xs md:text-sm font-black text-white drop-shadow-md w-8 text-right">{value}</span>
+            </div>
+        );
 
-           <button onClick={() => setScene('menu')} className="w-full bg-blue-500 hover:bg-blue-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 transition border-4 border-black shrink-0">
-             <RefreshCw className="inline-block mr-2 mb-1"/> 再次挑戰
-           </button>
-         </div>
-      </div>
-    );
-  }
+        function SurvivalGame() {
+            const [scene, setScene] = useState('menu'); 
+            const [profile, setProfile] = useState({ grade: 'mid', season: 'winter', time: 'night', disaster: 'earthquake' });
+            const [inventory, setInventory] = useState({});
+            const [activeTab, setActiveTab] = useState(0);
+            
+            // 旅程狀態
+            const [hp, setHp] = useState(100);
+            const [score, setScore] = useState(0); 
+            const [progress, setProgress] = useState(0); 
+            const [journeyEvents, setJourneyEvents] = useState([]); 
+            const [currentEventIndex, setCurrentEventIndex] = useState(0);
+            const [journeyLog, setJourneyLog] = useState([]);
+            const [showEventModal, setShowEventModal] = useState(false);
+            const [eventFeedback, setEventFeedback] = useState(null);
 
-  return null;
-}
+            const currentMaxWeight = PROFILE_CONFIG.grades.find(g => g.id === profile.grade)?.weightLimit || 4500;
+            
+            const calculateWeight = () => {
+                return Object.entries(inventory).reduce((acc, [id, count]) => {
+                    const item = ITEMS_DB.find(i => i.id === id);
+                    return acc + (item ? item.weight * count : 0);
+                }, 0);
+            };
+            const currentWeight = calculateWeight();
+
+            // --- 遊戲邏輯 ---
+
+            const handleItemToggle = (item, action) => {
+                if (action === 'add') {
+                    setInventory(prev => {
+                        const count = prev[item.id] || 0;
+                        if (count >= 5) return prev;
+                        return { ...prev, [item.id]: count + 1 };
+                    });
+                } else {
+                    setInventory(prev => {
+                        const count = prev[item.id] || 0;
+                        if (count <= 0) return prev;
+                        const next = { ...prev, [item.id]: count - 1 };
+                        if (next[item.id] === 0) delete next[item.id];
+                        return next;
+                    });
+                }
+            };
+
+            const generateEvents = () => {
+                let pool = [];
+                SCENARIO_DB.forEach(evt => {
+                    if (evt.type === 'universal') {
+                        pool.push(evt);
+                    } else if (evt.conditions) {
+                        let match = true;
+                        if (evt.conditions.time && evt.conditions.time !== profile.time) match = false;
+                        if (evt.conditions.season && evt.conditions.season !== profile.season) match = false;
+                        if (evt.conditions.disaster && evt.conditions.disaster !== profile.disaster) match = false;
+                        if (match) pool.push(evt);
+                    }
+                });
+
+                const priorityEvents = pool.filter(e => e.type !== 'universal').sort(() => Math.random() - 0.5);
+                const universalEvents = pool.filter(e => e.type === 'universal').sort(() => Math.random() - 0.5);
+                let finalEvents = [...priorityEvents, ...universalEvents].slice(0, 5);
+                while(finalEvents.length < 5) finalEvents.push(SCENARIO_DB.find(e => e.id === 'thirsty_extreme'));
+                return finalEvents;
+            };
+
+            const startJourney = () => {
+                if (currentWeight > currentMaxWeight) {
+                    alert(`背包太重了！請減到 ${currentMaxWeight}g 以下。`);
+                    return;
+                }
+                if (Object.keys(inventory).length === 0) {
+                    alert("背包是空的，這樣很危險喔！");
+                    return;
+                }
+
+                const events = generateEvents();
+                setJourneyEvents(events);
+                setHp(100);
+                setScore(0);
+                setProgress(0);
+                setCurrentEventIndex(0);
+                setJourneyLog([]);
+                setShowEventModal(false);
+                setEventFeedback(null);
+                setScene('journey');
+                
+                advanceJourney(0, 0, events);
+            };
+
+            const advanceJourney = (targetIndex, currentProg, eventsList) => {
+                if (targetIndex >= 5) {
+                    setProgress(100);
+                    setScore(prev => prev + hp); // 剩餘體力轉分數
+                    setTimeout(() => setScene('report'), 1500);
+                    return;
+                }
+
+                const eventProgressPoint = (targetIndex + 1) * 18; 
+                const walk = setInterval(() => {
+                    setProgress(prev => {
+                        if (prev >= eventProgressPoint) {
+                            clearInterval(walk);
+                            setCurrentEventIndex(targetIndex);
+                            setShowEventModal(true);
+                            return eventProgressPoint;
+                        }
+                        return prev + 0.5;
+                    });
+                }, 30);
+            };
+
+            const handleUseItem = (item) => {
+                const currentEvent = journeyEvents[currentEventIndex];
+                if (!currentEvent) return;
+
+                const isCorrect = item.tags.includes(currentEvent.reqTag);
+
+                if (isCorrect) {
+                    setEventFeedback({ type: 'success', text: currentEvent.success });
+                    setScore(prev => prev + 100); // 答對加分！
+                    
+                    if (['water', 'food', 'toilet', 'power'].some(t => item.tags.includes(t))) {
+                        setInventory(prev => ({ ...prev, [item.id]: Math.max(0, prev[item.id] - 1) }));
+                    }
+                    
+                    setTimeout(() => {
+                        setShowEventModal(false);
+                        setEventFeedback(null);
+                        advanceJourney(currentEventIndex + 1, progress, journeyEvents);
+                    }, 2000);
+                } else {
+                    setEventFeedback({ type: 'retry', text: '這個好像沒用...再試試別的？', damage: 0 });
+                    setTimeout(() => setEventFeedback(null), 1500);
+                }
+            };
+
+            const handleNoItem = () => {
+                const currentEvent = journeyEvents[currentEventIndex];
+                setEventFeedback({ type: 'fail', text: currentEvent.fail });
+                setHp(prev => Math.max(0, prev - currentEvent.damage));
+                setJourneyLog(prev => [...prev, { event: currentEvent.text, result: 'fail', damage: currentEvent.damage }]);
+
+                setTimeout(() => {
+                    setShowEventModal(false);
+                    setEventFeedback(null);
+                    if (hp - currentEvent.damage <= 0) {
+                        setScene('report');
+                    } else {
+                        advanceJourney(currentEventIndex + 1, progress, journeyEvents);
+                    }
+                }, 2500);
+            };
+
+            // 1. 主選單
+            if (scene === 'menu') {
+                return (
+                    <div className="h-screen w-full bg-yellow-400 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                        <div className="absolute top-10 left-10 text-8xl animate-bounce opacity-20">🎒</div>
+                        <div className="absolute bottom-10 right-10 text-8xl animate-pulse opacity-20">🔦</div>
+                        
+                        <div className="bg-white p-8 md:p-12 rounded-[2rem] border-8 border-black shadow-xl text-center max-w-lg w-full z-10 transform -rotate-1 flex flex-col items-center">
+                            <div className="text-8xl md:text-9xl mb-4 animate-bounce inline-block">🐻</div>
+                            <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-wider text-gray-900 leading-tight">波波熊的<br/><span className="text-red-500">防災挑戰</span></h1>
+                            <p className="text-xl md:text-2xl font-bold text-gray-500 mb-8">準備好逃生背包了嗎？</p>
+                            
+                            <button onClick={() => setScene('setup')} className="w-full bg-blue-500 hover:bg-blue-600 text-white border-4 border-black text-2xl md:text-3xl font-black py-4 md:py-5 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition active:translate-y-0 active:shadow-none flex items-center justify-center gap-3">
+                                <Play fill="currentColor" size={32}/> 開始挑戰
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 2. 設定頁
+            if (scene === 'setup') {
+                return (
+                    <div className="h-screen w-full bg-sky-100 flex flex-col p-4 overflow-hidden">
+                        <div className="flex-1 bg-white rounded-[2rem] border-4 border-black shadow-xl p-4 md:p-8 flex flex-col overflow-y-auto">
+                            <h2 className="text-2xl md:text-3xl font-black mb-6 text-center flex items-center justify-center gap-2">
+                                <Info size={32}/> 設定情境
+                            </h2>
+                            
+                            <div className="space-y-6 flex-1">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-3 border-l-4 border-yellow-400 pl-2">發生什麼事？</h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {PROFILE_CONFIG.disasters.map(d => (
+                                            <button key={d.id} onClick={() => setProfile({...profile, disaster: d.id})}
+                                                className={`p-3 md:p-4 rounded-xl border-2 text-center transition-all ${profile.disaster === d.id ? 'bg-red-100 border-red-500 ring-2 ring-red-300' : 'bg-gray-50 border-gray-200'}`}>
+                                                <div className="text-3xl md:text-4xl mb-1">{d.icon}</div>
+                                                <div className="font-black text-lg md:text-xl">{d.label}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-xl font-bold mb-3 border-l-4 border-yellow-400 pl-2">環境狀況？</h3>
+                                    <div className="flex gap-3 mb-3">
+                                        {PROFILE_CONFIG.seasons.map(s => (
+                                            <button key={s.id} onClick={() => setProfile({...profile, season: s.id})}
+                                                className={`flex-1 p-2 rounded-xl border-2 flex items-center justify-center gap-2 font-bold text-lg transition-all ${profile.season === s.id ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-200'}`}>
+                                                {s.icon} {s.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-3">
+                                        {PROFILE_CONFIG.times.map(t => (
+                                            <button key={t.id} onClick={() => setProfile({...profile, time: t.id})}
+                                                className={`flex-1 p-2 rounded-xl border-2 flex items-center justify-center gap-2 font-bold text-lg transition-all ${profile.time === t.id ? 'bg-indigo-100 border-indigo-500' : 'bg-gray-50 border-gray-200'}`}>
+                                                {t.icon} {t.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-xl font-bold mb-3 border-l-4 border-yellow-400 pl-2">你的年級？</h3>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {PROFILE_CONFIG.grades.map(g => (
+                                            <button key={g.id} onClick={() => setProfile({...profile, grade: g.id})}
+                                                className={`p-2 rounded-xl border-2 font-black text-lg transition-all ${profile.grade === g.id ? 'bg-green-100 border-green-500' : 'bg-gray-50 border-gray-200'}`}>
+                                                {g.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onClick={() => setScene('packing')}
+                                className="w-full mt-4 bg-black text-white border-4 border-gray-600 text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
+                                <Backpack size={28}/> 設定完成，去打包！
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 3. 打包頁
+            if (scene === 'packing') {
+                return (
+                    <div className="h-screen w-full bg-[#FFF8E1] flex flex-col overflow-hidden">
+                        <div className="bg-white border-b-4 border-black px-4 py-3 shadow-md z-10 flex flex-col gap-2 shrink-0">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-4xl animate-bounce">🏠</span>
+                                    <div>
+                                        <div className="font-black text-xl md:text-2xl leading-none text-red-600">緊急撤離！</div>
+                                        <div className="text-xs md:text-sm font-bold text-gray-500 mt-0.5">
+                                            {PROFILE_CONFIG.disasters.find(d=>d.id===profile.disaster).label}/{profile.season==='summer'?'夏':'冬'}/{profile.time==='day'?'日':'夜'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onClick={startJourney}
+                                    className="bg-red-500 hover:bg-red-600 text-white border-2 border-black font-black px-4 py-2 md:px-6 md:py-2 rounded-xl shadow-[3px_3px_0px_0px_#000] active:translate-y-1 active:shadow-none animate-pulse text-lg md:text-xl transition">
+                                    出發！
+                                </button>
+                            </div>
+                            
+                            <div className="relative pt-1">
+                                <div className="h-6 bg-gray-200 rounded-full border-2 border-black overflow-hidden">
+                                    <div className={`h-full transition-all duration-300 ${currentWeight > currentMaxWeight ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min(100, (currentWeight/currentMaxWeight)*100)}%` }}></div>
+                                </div>
+                                <div className="flex justify-between text-xs md:text-sm font-black mt-1">
+                                    <span>🎒 背包重量</span>
+                                    <span className={currentWeight > currentMaxWeight ? 'text-red-600' : 'text-gray-600'}>{currentWeight} / {currentMaxWeight}g</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-col overflow-hidden">
+                            <div className="flex overflow-x-auto p-2 gap-2 bg-[#FFECB3] flex-shrink-0 scrollbar-hide">
+                                <button onClick={()=>setActiveTab(0)} className={`px-4 py-2 rounded-t-xl border-2 border-b-0 font-black text-base whitespace-nowrap ${activeTab===0 ? 'bg-black text-white border-black h-12 mt-0' : 'bg-white border-gray-400 h-10 mt-2 text-gray-500'}`}>全部</button>
+                                {Object.entries(CATEGORIES).map(([k, v]) => (
+                                    <button key={k} onClick={()=>setActiveTab(Number(k))} className={`px-4 py-2 rounded-t-xl border-2 border-b-0 font-black text-base whitespace-nowrap ${activeTab===Number(k) ? 'bg-black text-white border-black h-12 mt-0' : 'bg-white border-gray-400 h-10 mt-2 text-gray-500'}`}>{v}</button>
+                                ))}
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 content-start bg-[#FFFDE7]">
+                                {ITEMS_DB.filter(i => activeTab === 0 || i.type === activeTab).map(item => (
+                                    <div key={item.id} className="bg-white border-2 border-black rounded-2xl p-2 flex flex-col justify-between shadow-sm relative group cursor-pointer active:scale-95 transition min-h-[140px]" onClick={() => handleItemToggle(item, 'add')}>
+                                        <div className="text-center">
+                                            <div className="text-5xl mb-1 transform group-hover:scale-110 transition filter drop-shadow-sm">{item.icon}</div>
+                                            <div className="font-black text-base text-gray-800 leading-tight mb-1">{item.name}</div>
+                                            <div className="text-[10px] text-gray-500 font-bold bg-gray-100 rounded-full inline-block px-2">{item.weight}g</div>
+                                        </div>
+
+                                        {inventory[item.id] > 0 ? (
+                                            <div className="flex items-center justify-center gap-2 bg-blue-100 rounded-lg p-1 mt-auto border border-blue-300">
+                                                <button onClick={(e) => {e.stopPropagation(); handleItemToggle(item, 'sub')}} className="w-6 h-6 flex items-center justify-center bg-white rounded-full border border-blue-300 text-blue-600"><Minus size={14} strokeWidth={3}/></button>
+                                                <span className="font-black text-lg text-blue-800">{inventory[item.id]}</span>
+                                                <button onClick={(e) => {e.stopPropagation(); handleItemToggle(item, 'add')}} className="w-6 h-6 flex items-center justify-center bg-white rounded-full border border-blue-300 text-blue-600"><RefreshCw size={14} strokeWidth={3} className="rotate-45"/></button>
+                                            </div>
+                                        ) : (
+                                            <button className="w-full bg-gray-50 border-2 border-gray-300 border-dashed rounded-lg py-1.5 font-bold text-gray-400 text-sm mt-auto">放入</button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 4. 旅程頁
+            if (scene === 'journey') {
+                const currentEvent = journeyEvents[currentEventIndex];
+
+                return (
+                    <div className={`h-screen w-full flex flex-col relative transition-colors duration-1000 overflow-hidden ${profile.time === 'night' ? 'bg-slate-900 text-white' : 'bg-sky-300 text-black'}`}>
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            {profile.time === 'day' && <div className="absolute top-10 right-10 text-yellow-400 animate-spin-slow"><Sun size={80}/></div>}
+                            {profile.time === 'night' && <div className="absolute top-10 right-10 text-yellow-100"><Moon size={60}/></div>}
+                            {profile.season === 'winter' && <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]"></div>}
+                            {profile.disaster === 'flood' && <div className="absolute bottom-0 w-full h-1/2 bg-blue-500/30 backdrop-blur-sm"></div>}
+                            <div className="absolute bottom-0 w-full h-1/3 bg-gradient-to-t from-gray-700 to-transparent opacity-50"></div>
+                        </div>
+
+                        <div className="relative z-10 p-3 md:p-4 flex justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/20 shadow-lg">
+                            <div className="flex flex-col w-1/2 md:w-1/3">
+                                <div className="w-full h-5 md:h-6 bg-gray-300 rounded-full overflow-hidden border-2 border-black shadow-inner relative mt-1">
+                                    <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                                    <div className="absolute top-1/2 -translate-y-1/2 transition-all duration-300 text-xl md:text-2xl filter drop-shadow-md" style={{ left: `calc(${progress}% - 10px)` }}>🐻</div>
+                                </div>
+                            </div>
+                            <div className="w-1/3 flex flex-col gap-1">
+                                <StatBar icon={<Heart size={24} className="text-red-500 fill-current"/>} value={hp} color="bg-red-500" />
+                                <StatBar icon={<Star size={24} className="text-yellow-400 fill-current"/>} value={score} color="bg-yellow-400" max={600} />
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
+                            {!showEventModal && (
+                                <div className="text-center animate-bounce-slow">
+                                    <div className="text-[8rem] md:text-[10rem] transform scale-x-[-1] filter drop-shadow-2xl">🐻</div>
+                                    <div className="font-black text-2xl md:text-3xl mt-4 bg-white/90 px-6 py-2 rounded-full text-black inline-block shadow-xl border-4 border-black">
+                                        趕路中... {Math.round(progress)}%
+                                    </div>
+                                </div>
+                            )}
+
+                            {showEventModal && currentEvent && (
+                                <div className="bg-white text-black p-6 md:p-8 rounded-[2rem] border-[6px] border-black shadow-[0_20px_60px_rgba(0,0,0,0.6)] max-w-xl w-full animate-pop-in z-50 flex flex-col max-h-[80vh]">
+                                    {!eventFeedback ? (
+                                        <>
+                                            <div className="text-center mb-4 shrink-0">
+                                                <div className="text-6xl md:text-8xl mb-2 animate-shake">
+                                                    {currentEvent.conditions?.time === 'night' ? '🌑' : 
+                                                    currentEvent.conditions?.season === 'winter' ? '🥶' :
+                                                    currentEvent.conditions?.disaster === 'flood' ? '🌧️' : '⚠️'}
+                                                </div>
+                                                <h2 className="text-2xl md:text-3xl font-black mb-2 text-red-600 leading-tight">{currentEvent.text}</h2>
+                                                <p className="text-gray-500 font-bold text-sm md:text-base bg-gray-100 inline-block px-3 py-1 rounded-full">請點擊物品使用：</p>
+                                            </div>
+                                            
+                                            <div className="bg-gray-100 p-3 rounded-2xl overflow-y-auto grid grid-cols-3 gap-2 border-[3px] border-gray-300 shadow-inner flex-1 min-h-[150px]">
+                                                {Object.keys(inventory).length === 0 && <div className="col-span-3 text-center text-gray-400 py-10 font-bold">背包空空的...</div>}
+                                                {Object.keys(inventory).map(id => {
+                                                    const item = ITEMS_DB.find(i => i.id === id);
+                                                    if (!item) return null;
+                                                    return (
+                                                        <div key={id} onClick={() => handleUseItem(item)} 
+                                                            className="bg-white border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 shadow-sm">
+                                                            <span className="text-3xl md:text-4xl mb-1">{item.icon}</span>
+                                                            <span className="text-xs font-black truncate w-full text-center">{item.name}</span>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+
+                                            <button onClick={handleNoItem} className="w-full mt-4 text-gray-400 text-base font-bold underline hover:text-red-500 shrink-0">
+                                                我沒有可以用的東西... (扣血)
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-10 flex flex-col items-center justify-center h-full">
+                                            <div className="text-8xl mb-6 animate-bounce">{eventFeedback.type === 'success' ? '✅' : '❌'}</div>
+                                            <h3 className={`text-3xl md:text-4xl font-black mb-4 ${eventFeedback.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                                                {eventFeedback.type === 'success' ? '解決了！+100分' : '糟了！'}
+                                            </h3>
+                                            <p className="font-bold text-gray-700 text-xl leading-relaxed">{eventFeedback.text}</p>
+                                            {eventFeedback.type === 'retry' && <div className="mt-4 text-orange-500 font-bold animate-pulse">正在重新思考...</div>}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="h-16 md:h-24 bg-gray-800 w-full relative z-0 flex items-end overflow-hidden border-t-4 border-black shrink-0">
+                            <div className="flex gap-40 animate-slide text-4xl md:text-6xl opacity-50 absolute bottom-4 w-[200%]">
+                                <span>🏚️</span><span>🌲</span><span>🌊</span><span>🚑</span><span>🏚️</span><span>🌲</span><span>🌊</span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 5. 結算報告
+            if (scene === 'report') {
+                const isSuccess = hp > 0;
+                const finalScore = score;
+                let rank = 'C';
+                if (finalScore >= 500) rank = 'S';
+                else if (finalScore >= 400) rank = 'A';
+                else if (finalScore >= 300) rank = 'B';
+                
+                return (
+                    <div className="h-screen w-full bg-indigo-900 flex flex-col items-center justify-center p-4 relative">
+                        {isSuccess && <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 bg-[url('https://www.transparenttextures.com/patterns/confetti.png')]"></div>}
+                        
+                        <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border-8 border-black shadow-2xl max-w-2xl w-full text-center z-10 relative flex flex-col max-h-screen">
+                            <div className="text-7xl md:text-9xl -mt-16 md:-mt-20 mb-4 filter drop-shadow-lg">
+                                {isSuccess ? '🏕️' : '🚑'}
+                            </div>
+                            
+                            <h2 className={`text-4xl md:text-6xl font-black mb-2 ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+                                {isSuccess ? '抵達收容所！' : '任務失敗...'}
+                            </h2>
+                            
+                            <div className="flex justify-center items-center gap-4 my-4">
+                                <div className="bg-yellow-100 p-4 rounded-2xl border-4 border-yellow-400">
+                                    <div className="text-xs font-bold text-gray-500">最終得分</div>
+                                    <div className="text-4xl font-black text-yellow-600">{finalScore}</div>
+                                </div>
+                                <div className="bg-blue-100 p-4 rounded-2xl border-4 border-blue-400">
+                                    <div className="text-xs font-bold text-gray-500">生存評價</div>
+                                    <div className="text-4xl font-black text-blue-600">{rank}</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-100 rounded-3xl p-4 text-left mb-6 border-[3px] border-gray-300 flex-1 overflow-y-auto">
+                                <div className="space-y-2">
+                                    {journeyLog.length === 0 && <span className="text-gray-400 text-lg font-bold">一路上非常順利，沒有受傷！</span>}
+                                    {journeyLog.map((log, i) => (
+                                        <div key={i} className="text-red-700 font-bold flex items-start bg-red-50 p-2 rounded-xl border border-red-200">
+                                            <XCircle size={20} className="mr-2 flex-shrink-0 mt-0.5"/> 
+                                            <div>
+                                                <div>{log.event}</div>
+                                                <div className="text-xs opacity-70">扣除 {log.damage} HP</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button onClick={() => setScene('menu')} className="w-full bg-blue-500 hover:bg-blue-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 transition border-4 border-black shrink-0">
+                                <RefreshCw className="inline-block mr-2 mb-1"/> 再次挑戰
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<SurvivalGame />);
+    </script>
+</body>
+</html>
