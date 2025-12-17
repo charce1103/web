@@ -8,20 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* --- 配色方案 (依據上傳圖片) --- */
+        /* --- 配色方案 (莫蘭迪色系) --- */
         :root {
-            /* 核心色票 */
-            --color-deep-khaki: #3E442B;   /* 深卡其色 - 主文字/按鈕 */
-            --color-ebony: #6A7062;        /* 烏木 - 次要文字/標籤 */
-            --color-lavender: #8D909B;     /* 薰衣草灰 - 強調/邊框 */
-            --color-light-lavender: #AAADC4; /* 淺薰衣草灰 - 側邊欄背景 */
-            --color-pale-sky: #D6EEFF;     /* 蒼白天空 - 網頁背景 */
+            --color-deep-khaki: #3E442B;   
+            --color-ebony: #6A7062;        
+            --color-lavender: #8D909B;     
+            --color-light-lavender: #AAADC4; 
+            --color-pale-sky: #D6EEFF;     
 
-            /* 應用變數 */
-            --primary-color: var(--color-deep-khaki);
-            --primary-hover: var(--color-ebony);
-            --accent-color: var(--color-lavender);
-            
             --bg-color: var(--color-pale-sky); 
             --sidebar-bg: var(--color-light-lavender); 
             --sidebar-text: var(--color-deep-khaki);
@@ -31,7 +25,7 @@
             --text-sec: var(--color-ebony);
             
             --radius: 12px;
-            --shadow-sm: 0 2px 4px rgba(62, 68, 43, 0.05); /* 使用深卡其色做陰影基底 */
+            --shadow-sm: 0 2px 4px rgba(62, 68, 43, 0.05);
             --shadow-md: 0 6px 16px rgba(62, 68, 43, 0.1);
             
             --sidebar-width: 280px;
@@ -47,22 +41,22 @@
             padding: 0;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
-            padding-bottom: 80px; /* 手機版底部空間 */
+            padding-bottom: 80px;
         }
 
-        /* --- 1. App Layout (全螢幕) --- */
+        /* --- Layout --- */
         .app-wrapper {
             display: flex;
-            width: 100%; /* 修改：佔滿全螢幕 */
-            max-width: 100%; /* 確保不被限制 */
+            width: 100%;
+            max-width: 100%;
             margin: 0;
             min-height: 100vh;
         }
 
-        /* --- 2. Sidebar (左側選單) --- */
+        /* --- Sidebar --- */
         .sidebar {
             width: var(--sidebar-width);
-            background: var(--sidebar-bg); /* 新配色 */
+            background: var(--sidebar-bg);
             padding: 2rem 1.5rem;
             height: 100vh;
             position: sticky;
@@ -99,7 +93,6 @@
             display: inline-block;
         }
 
-        /* 標籤雲樣式 */
         .tag-cloud {
             display: flex;
             flex-wrap: wrap;
@@ -108,7 +101,7 @@
 
         .nav-tag {
             padding: 6px 14px;
-            background: rgba(255, 255, 255, 0.4); /* 半透明白 */
+            background: rgba(255, 255, 255, 0.4);
             color: var(--sidebar-text);
             border-radius: 20px;
             font-size: 0.9rem;
@@ -126,22 +119,21 @@
 
         .nav-tag.active {
             background: var(--color-deep-khaki);
-            color: #fff; /* 這裡用白色字對比深色背景 */
+            color: #fff;
             box-shadow: 0 4px 10px rgba(62, 68, 43, 0.3);
         }
 
-        /* --- 3. Main Content (右側內容) --- */
+        /* --- Main Content --- */
         .main-content {
             flex-grow: 1;
-            padding: 2rem 3rem; /* 增加內距讓畫面更舒服 */
+            padding: 2rem 3rem;
             width: 100%;
         }
 
-        /* 搜尋列 */
         .search-bar-wrapper {
             margin-bottom: 2.5rem;
             position: relative;
-            max-width: 800px; /* 搜尋列不要太長 */
+            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -152,7 +144,7 @@
             padding-left: 50px;
             border: 2px solid transparent;
             border-radius: 50px;
-            background: white; /* 搜尋框保持白色 */
+            background: white;
             box-shadow: var(--shadow-sm);
             font-size: 1rem;
             transition: 0.3s;
@@ -165,9 +157,7 @@
             box-shadow: 0 0 0 4px rgba(141, 144, 155, 0.2);
         }
 
-        .search-input::placeholder {
-            color: var(--color-lavender);
-        }
+        .search-input::placeholder { color: var(--color-lavender); }
 
         .search-icon {
             position: absolute;
@@ -177,14 +167,14 @@
             color: var(--color-lavender);
         }
 
-        /* --- 4. 置頂連結區塊 --- */
+        /* --- Pinned Section --- */
         .pinned-section {
             background: white;
             border-radius: var(--radius);
             padding: 1.5rem;
             margin-bottom: 3rem;
             box-shadow: var(--shadow-sm);
-            border-left: 6px solid var(--color-lavender); /* 使用薰衣草灰 */
+            border-left: 6px solid var(--color-lavender);
             background: linear-gradient(to right, #fff, #f9f9fc);
         }
 
@@ -220,17 +210,17 @@
         .pinned-item:hover {
             border-color: var(--color-lavender);
             color: var(--color-deep-khaki);
-            background: var(--color-pale-sky); /* 懸停時使用淡藍色背景 */
+            background: var(--color-pale-sky);
             transform: translateX(5px);
         }
 
         .pinned-item::before {
-            content: '📌'; /* 改用圖釘 */
+            content: '📌';
             margin-right: 12px;
             font-size: 1rem;
         }
 
-        /* --- 5. 作品 Grid 區塊 --- */
+        /* --- Portfolio Grid --- */
         .section-header {
             font-size: 1.6rem;
             font-weight: 800;
@@ -242,7 +232,7 @@
 
         .portfolio-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 卡片稍微加大 */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 30px;
         }
 
@@ -272,7 +262,6 @@
             position: relative;
         }
 
-        /* 預設圖的背景樣式，避免破圖太醜 */
         .card-img-link::before {
             content: '';
             position: absolute;
@@ -309,7 +298,7 @@
         .mini-tag {
             font-size: 0.75rem;
             color: #fff;
-            background: var(--color-ebony); /* 烏木色標籤 */
+            background: var(--color-ebony);
             padding: 3px 10px;
             border-radius: 12px;
             font-weight: 500;
@@ -339,7 +328,7 @@
             overflow: hidden;
         }
 
-        /* --- 6. Admin Controls --- */
+        /* --- Admin Controls --- */
         .admin-overlay {
             display: none;
             position: absolute;
@@ -370,7 +359,6 @@
         .edit-btn { color: var(--color-deep-khaki); }
         .del-btn { color: #d33; }
 
-        /* Floating Admin Button */
         .fab {
             position: fixed;
             bottom: 90px;
@@ -391,47 +379,36 @@
         }
         
         .fab:hover { background: var(--color-ebony); transform: scale(1.05); }
-        .fab.admin-active { background: #d33; transform: rotate(45deg); } /* 登出變成紅色叉叉 */
+        .fab.admin-active { background: #d33; transform: rotate(45deg); } 
         .fab.admin-active:hover { background: #b00; }
 
-        /* --- 7. Mobile Responsive Design --- */
+        /* --- Mobile Responsive --- */
         @media (max-width: 768px) {
-            .app-wrapper {
-                flex-direction: column;
-            }
+            .app-wrapper { flex-direction: column; }
 
             .sidebar {
                 position: fixed;
-                bottom: 0;
-                top: auto;
-                left: 0;
-                width: 100%;
-                height: 75px;
+                bottom: 0; top: auto; left: 0;
+                width: 100%; height: 75px;
                 padding: 10px 15px;
                 flex-direction: row;
                 align-items: center;
                 gap: 12px;
-                background: white; /* 手機版底部選單用白色比較乾淨 */
+                background: white;
                 box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
                 z-index: 2000;
                 border-right: none;
                 border-top: 1px solid #eee;
-                overflow-x: auto;
-                overflow-y: hidden;
+                overflow-x: auto; overflow-y: hidden;
                 white-space: nowrap;
                 -webkit-overflow-scrolling: touch;
             }
             
             .app-title, .menu-label { display: none; }
-
-            .sidebar .tag-cloud {
-                flex-wrap: nowrap;
-                width: 100%;
-            }
+            .sidebar .tag-cloud { flex-wrap: nowrap; width: 100%; }
 
             .nav-tag {
-                flex-shrink: 0;
-                padding: 8px 18px;
+                flex-shrink: 0; padding: 8px 18px;
                 font-size: 0.95rem;
                 border: 1px solid #eee;
                 background: #f8f9fa;
@@ -443,13 +420,8 @@
                 color: white;
             }
 
-            .main-content {
-                padding: 1.5rem;
-                padding-bottom: 2rem;
-            }
-            
+            .main-content { padding: 1.5rem; padding-bottom: 2rem; }
             .search-input { font-size: 16px; }
-
             .fab { bottom: 90px; right: 20px; }
             
             .mobile-header {
@@ -466,20 +438,28 @@
             }
         }
         
-        @media (min-width: 769px) {
-            .mobile-header { display: none; }
-        }
+        @media (min-width: 769px) { .mobile-header { display: none; } }
 
-        /* Loading */
+        /* --- Loading & Error State --- */
         .loader {
             border: 3px solid #f3f3f3;
             border-top: 3px solid var(--color-deep-khaki);
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 45px; height: 45px;
             animation: spin 1s linear infinite;
             margin: 60px auto;
         }
+        
+        /* 錯誤發生時的樣式 (停止旋轉，顯示紅字) */
+        .loader.error {
+            border: none;
+            animation: none;
+            width: auto; height: auto;
+            color: #d33;
+            font-weight: bold;
+            text-align: center;
+        }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
@@ -487,18 +467,15 @@
 <body>
 
     <div class="app-wrapper">
-        
         <nav class="sidebar" id="sidebar-nav">
             <div class="app-title" onclick="location.reload()">小閒工作室</div>
             <div>
                 <div class="menu-label">分類標籤</div>
-                <div class="tag-cloud" id="tag-cloud-container">
-                    </div>
+                <div class="tag-cloud" id="tag-cloud-container"></div>
             </div>
         </nav>
 
         <main class="main-content">
-            
             <div class="mobile-header">
                 <h1 onclick="location.reload()">小閒工作室</h1>
             </div>
@@ -518,30 +495,41 @@
             <div class="section-header">所有作品</div>
             <div id="grid" class="portfolio-grid"></div>
         </main>
-
     </div>
 
     <div id="admin-fab" class="fab" title="管理員登入">⚙️</div>
 
     <script>
-        // ==========================================
-        // 設定區域：請確認此網址正確
-        // ==========================================
+        // =========================================================================
+        // 🔴 唯一需要修改的地方：請把下面的網址換成您之前部署的 GAS 網頁應用程式網址
+        // =========================================================================
         const API_URL = "https://script.google.com/macros/s/AKfycbyjABkbVoHep96Zi777VjUxqFItnLVY1g2eYbJ7rgFIkBpWOAmnCkGGkZzO8nCubo7GvQ/exec"; 
-        const DEFAULT_IMG = "images/image001.jpg"; // 預設圖片路徑
+        // =========================================================================
         
-        // 全域變數
+        const DEFAULT_IMG = "images/image001.jpg"; 
+        
         let allData = [];
         let currentFilter = 'all'; 
         let isAdmin = false;
         let adminPassword = "";
-        
-        // 自動登出變數
         let logoutTimer;
-        const TIMEOUT_DURATION = 20 * 60 * 1000; // 20分鐘
+        const TIMEOUT_DURATION = 20 * 60 * 1000;
 
-        // 初始化
         window.onload = function() {
+            // 防呆檢查：如果網址包含 "..." 代表忘記修改
+            if (API_URL.includes("...")) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '設定錯誤',
+                    text: '請打開 index.html 程式碼，將 API_URL 換成您自己的 GAS 網址！',
+                    footer: '程式碼約第 440 行',
+                    allowOutsideClick: false
+                });
+                const loader = document.getElementById('loading');
+                loader.classList.add('error');
+                loader.innerHTML = '請修正程式碼中的 API_URL 網址';
+                return;
+            }
             fetchData();
         };
 
@@ -578,7 +566,7 @@
             }
         }
 
-        // 1. 讀取資料
+        // 1. 讀取資料 (優化錯誤顯示)
         async function fetchData() {
             try {
                 const response = await fetch(API_URL);
@@ -587,7 +575,9 @@
                 processData(data);
             } catch (error) {
                 console.error("載入失敗:", error);
-                document.getElementById('loading').innerHTML = '<p style="text-align:center; color:#d33;">無法載入資料，請稍後再試。</p>';
+                const loader = document.getElementById('loading');
+                loader.classList.add('error'); // 停止旋轉動畫
+                loader.innerHTML = `無法載入資料，請檢查網址或稍後再試。<br><small>${error.message}</small>`;
             }
         }
 
@@ -624,11 +614,10 @@
             if(window.innerWidth <= 768 && element) {
                 element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
-
             filterAndRender();
         }
 
-        // 3. 核心渲染邏輯 (處理圖片防呆)
+        // 3. 核心渲染
         function filterAndRender() {
             const search = document.getElementById('search-input').value.toLowerCase();
             const splitRegex = /[|,\uff0c\u3001]/;
@@ -683,8 +672,6 @@
                     .map(tag => `<span class="mini-tag">${tag}</span>`)
                     .join('');
 
-                // 處理圖片邏輯：如果欄位為空，直接用預設圖
-                // 如果欄位有值，使用該值，並加上 onerror 處理破圖
                 const imgSrc = (item.image && item.image.trim() !== "") ? item.image : DEFAULT_IMG;
 
                 const card = document.createElement('div');
@@ -712,10 +699,8 @@
             });
         }
 
-        // 4. 事件監聽
         document.getElementById('search-input').addEventListener('input', filterAndRender);
 
-        // 5. API 與 Admin 邏輯
         async function sendToAPI(action, payload = {}, id = null) {
             const body = JSON.stringify({
                 action: action,
@@ -742,12 +727,11 @@
                     title: '管理員登入',
                     input: 'password',
                     inputPlaceholder: '請輸入密碼',
-                    // 優化鍵盤與輸入屬性 (強制英文鍵盤)
                     inputAttributes: {
                         autocapitalize: 'off',
                         autocorrect: 'off',
                         spellcheck: 'false',
-                        name: 'password', // 幫助瀏覽器識別
+                        name: 'password',
                         id: 'swal-input-password'
                     },
                     showCancelButton: true,
@@ -760,7 +744,7 @@
                     isAdmin = true;
                     document.body.classList.add('is-admin');
                     fab.textContent = '+'; 
-                    fab.classList.add('admin-active'); // 變紅色旋轉
+                    fab.classList.add('admin-active');
                     resetLogoutTimer();
                     filterAndRender(); 
                     Swal.fire({ 
@@ -785,4 +769,66 @@
                 html:
                     `<input id="swal-title" class="swal2-input" placeholder="作品名稱" value="${item ? item.title : ''}">` +
                     `<input id="swal-cat" class="swal2-input" placeholder="分類 (例如: 網頁 | 設計)" value="${item ? item.category : ''}">` +
-                    `<input id="swal-desc" class="swal2-input" placeholder="作品描述" value="${item ? item.description : ''
+                    `<input id="swal-desc" class="swal2-input" placeholder="作品描述" value="${item ? item.description : ''}">` +
+                    `<input id="swal-img" class="swal2-input" placeholder="圖片連結 URL (留空則使用預設圖)" value="${item ? item.image : ''}">` +
+                    `<input id="swal-link" class="swal2-input" placeholder="作品連結 URL" value="${item ? item.link : ''}">`,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--color-deep-khaki)',
+                preConfirm: () => {
+                    return {
+                        id: item ? item.id : null,
+                        title: document.getElementById('swal-title').value,
+                        category: document.getElementById('swal-cat').value,
+                        description: document.getElementById('swal-desc').value,
+                        image: document.getElementById('swal-img').value,
+                        link: document.getElementById('swal-link').value
+                    }
+                }
+            });
+
+            if (formValues) {
+                Swal.fire({ title: '處理中...', didOpen: () => Swal.showLoading() });
+                try {
+                    const action = isEdit ? 'update' : 'add';
+                    const msg = await sendToAPI(action, formValues);
+                    Swal.fire('成功', msg, 'success');
+                    fetchData(); 
+                    resetLogoutTimer();
+                } catch (err) {
+                    Swal.fire('錯誤', err.message, 'error');
+                }
+            }
+        }
+
+        function editItem(id) {
+            resetLogoutTimer();
+            const item = allData.find(d => String(d.id) === String(id));
+            if (item) showForm(item);
+        }
+
+        function deleteItem(id) {
+            resetLogoutTimer();
+            Swal.fire({
+                title: '確定刪除?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '刪除'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: '刪除中...', didOpen: () => Swal.showLoading() });
+                    try {
+                        const msg = await sendToAPI('delete', {}, id);
+                        Swal.fire('成功', msg, 'success');
+                        fetchData();
+                        resetLogoutTimer();
+                    } catch (err) {
+                        Swal.fire('錯誤', err.message, 'error');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
