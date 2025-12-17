@@ -155,7 +155,7 @@
             color: var(--color-lavender);
         }
 
-        /* --- Pinned Section (已縮小間距) --- */
+        /* --- Pinned Section --- */
         .pinned-section {
             background: white;
             border-radius: var(--radius);
@@ -168,7 +168,7 @@
 
         .pinned-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px;
         }
 
@@ -194,12 +194,12 @@
         }
 
         .pinned-item::before {
-            content: '🗂️';
+            content: '🌌';
             margin-right: 8px;
             font-size: 0.9rem;
         }
 
-        /* --- Portfolio Grid (已縮小間距) --- */
+        /* --- Portfolio Grid --- */
         .portfolio-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -252,7 +252,7 @@
         .card:hover .card-img { transform: scale(1.08); }
 
         .card-content {
-            padding: 8px; /* 縮小卡片內距 */
+            padding: 10px 12px; /* 縮小卡片內距 */
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -277,26 +277,100 @@
         .card-title {
             font-size: 1.1rem;
             font-weight: 700;
-            margin: 0 0 4px 0; /* 縮小標題下邊界 */
+            margin: 0 0 4px 0;
             line-height: 1.3;
+            display: flex;
+            align-items: center;
         }
 
         .card-title-link {
             color: var(--text-main);
             text-decoration: none;
             transition: color 0.2s;
+            margin-right: 5px;
         }
         
         .card-title-link:hover { color: var(--color-lavender); }
 
-        .card-desc {
-            font-size: 0.85rem;
-            color: var(--text-sec);
-            line-height: 1.4; 
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        /* --- 彈窗 (Modal) 與圖示樣式 --- */
+        /* 1. 隱藏原本卡片上的描述文字 */
+        .card-desc { display: none; }
+
+        /* 2. 文件圖示 🏷️ */
+        .desc-icon {
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+            opacity: 0.7;
+        }
+        .desc-icon:hover {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        /* 3. 彈窗背景 */
+        .modal {
+            display: none;
+            position: fixed; 
+            z-index: 9999; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10vh auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 600px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            line-height: 1.8;
+            color: var(--text-main);
+        }
+
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-color);
+            color: var(--color-deep-khaki);
+            padding-right: 30px;
+        }
+
+        .close-modal {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .close-modal:hover { color: #d33; }
+
+        .pinned-link {
+            text-decoration: none;
+            color: inherit;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .pinned-link:hover { color: var(--color-deep-khaki); }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
         }
 
         /* --- Admin Controls --- */
@@ -330,82 +404,63 @@
         .edit-btn { color: var(--color-deep-khaki); }
         .del-btn { color: #d33; }
 
-        /* --- 修改原本的 FAB 設定 --- */
-		.fab {
-			/* 保持原本的位置設定 */
-			position: fixed;
-			bottom: 90px; 
-			right: 25px;
-			width: 56px;
-			height: 56px;
-			background: var(--color-deep-khaki); /* 未登入時的顏色 */
-			color: white;
-			border-radius: 50%;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 24px;
-			box-shadow: 0 4px 15px rgba(62, 68, 43, 0.4);
-			cursor: pointer;
-			z-index: 1000;
-			transition: all 0.3s;
-		}
+        /* 主按鈕 (新增/登入) */
+        .fab {
+            position: fixed;
+            bottom: 90px; 
+            right: 25px;
+            width: 56px;
+            height: 56px;
+            background: var(--color-deep-khaki);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(62, 68, 43, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
 
-		/* 登入後的「新增」按鈕：變成綠色 + 號 */
-		.fab.admin-active {
-			background: #5aa760; /* 🟢 綠色 */
-			transform: rotate(0deg); /* 保持 + 號，不旋轉 */
-		}
+        .fab.admin-active {
+            background: #5aa760; /* 綠色 */
+            transform: rotate(0deg);
+        }
+        .fab.admin-active:hover { background: #4a8e50; transform: scale(1.05); }
 
-		.fab.admin-active:hover {
-			background: #4a8e50; /* 深一點的綠色 */
-			transform: scale(1.05);
-		}
+        /* 登出按鈕 (紅色 X) */
+        .fab-logout {
+            position: fixed;
+            bottom: 160px; /* 位置在主按鈕上方 */
+            right: 25px;   /* 靠右距離對齊主按鈕 */
+            width: 56px;   /* 大小與主按鈕一致 */
+            height: 56px;
+            background: #d33;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 999;
+            
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-		/* --- 新增：獨立的登出按鈕 (紅色 X) --- */
-		.fab-logout {
-			position: fixed;
-			/* 位置設在主按鈕的上方 (90px + 56px + 15px間距) */
-			bottom: 160px; 
-			right: 25px; /* 對齊中心 */
-			width: 56px;
-			height: 56px;
-			background: #d33; /* 🔴 紅色 */
-			color: white;
-			border-radius: 50%;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 24px;
-			font-weight: bold;
-			box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-			cursor: pointer;
-			z-index: 999;
-    
-			/* 預設隱藏，登入後才滑出來 */
-			opacity: 0;
-			pointer-events: none;
-			transform: translateY(20px) scale(0.8);
-			transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-		}
-
-		/* 顯示登出按鈕時的狀態 */
-		.fab-logout.show {
-			opacity: 1;
-			pointer-events: auto;
-			transform: translateY(0) scale(1);
-		}
-
-		.fab-logout:hover {
-			background: #b00;
-			transform: scale(1.1);
-		}
-
-		/* 手機版位置微調 */
-		@media (max-width: 768px) {
-			.fab { bottom: 90px; right: 20px; }
-			.fab-logout { bottom: 160px; right: 27px; }
-		}
+        .fab-logout.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .fab-logout:hover { background: #b00; transform: scale(1.1); }
 
         /* --- Mobile Responsive --- */
         @media (max-width: 768px) {
@@ -448,6 +503,7 @@
             .main-content { padding: 1.5rem 1.5rem 5rem 1.5rem; }
             .search-input { font-size: 16px; }
             .fab { bottom: 80px; right: 20px; }
+            .fab-logout { bottom: 150px; right: 20px; }
             
             .mobile-header {
                 display: block;
@@ -518,8 +574,17 @@
         </main>
     </div>
 
+    <div id="desc-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-title" class="modal-header"></div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="logout-fab" class="fab-logout" title="登出管理模式">✕</div>
     <div id="admin-fab" class="fab" title="管理員登入">⚙️</div>
-	<div id="logout-fab" class="fab-logout" title="登出管理模式">x</div>
+
 
     <script>
         // =========================================================================
@@ -529,7 +594,7 @@
         // =========================================================================
         
         const DEFAULT_IMG = "images/image001.jpg"; 
-        const FEATURED_KEYWORD = "精選內容"; // 設定精選關鍵字
+        const FEATURED_KEYWORD = "精選內容"; 
         
         let allData = [];
         let currentFilter = 'all'; 
@@ -575,6 +640,10 @@
                 const fab = document.getElementById('admin-fab');
                 fab.textContent = '⚙️';
                 fab.classList.remove('admin-active');
+                
+                const logoutFab = document.getElementById('logout-fab');
+                if(logoutFab) logoutFab.classList.remove('show');
+
                 Swal.fire({
                     icon: 'info',
                     title: '閒置過久',
@@ -679,10 +748,18 @@
 
             container.style.display = 'block';
             grid.innerHTML = items.map(item => `
-                <a href="${item.link}" target="_blank" class="pinned-item">
-                    ${item.title}
-                    ${isAdmin ? `<span onclick="event.preventDefault(); editItem('${item.id}')" style="margin-left:auto; font-size:0.9rem; cursor:pointer; color:var(--color-ebony);">✏️</span>` : ''}
-                </a>
+                <div class="pinned-item">
+                    <a href="${item.link}" target="_blank" class="pinned-link">${item.title}</a>
+                    
+                    <span class="desc-icon" onclick="showDesc(event, '${item.id}')" title="查看描述">🏷️</span>
+
+                    ${isAdmin ? `
+                        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                            <span onclick="event.preventDefault(); event.stopPropagation(); editItem('${item.id}')" style="cursor:pointer; color:var(--color-deep-khaki); font-size:0.9rem;" title="編輯">✏️</span>
+                            <span onclick="event.preventDefault(); event.stopPropagation(); deleteItem('${item.id}')" style="cursor:pointer; color:#d33; font-size:0.9rem;" title="刪除">🗑️</span>
+                        </div>
+                    ` : ''}
+                </div>
             `).join('');
         }
 
@@ -716,10 +793,12 @@
                     </a>
                     <div class="card-content">
                         <div class="card-tags">${tagsHtml}</div>
+                        
                         <h3 class="card-title">
                             <a href="${item.link}" target="_blank" class="card-title-link">${item.title}</a>
+                            <span class="desc-icon" onclick="showDesc(event, '${item.id}')" title="查看描述">🏷️</span>
                         </h3>
-                        <p class="card-desc">${item.description}</p>
+                        
                     </div>
                     <div class="admin-overlay">
                         <button class="icon-btn edit-btn" onclick="editItem('${item.id}')">✏️</button>
@@ -751,15 +830,13 @@
             return result.message;
         }
 
-        // --- 1. 管理按鈕點擊事件 (登入 / 新增) ---
+        // --- 管理按鈕與登出邏輯 ---
         const fab = document.getElementById('admin-fab');
-        
-        // 🔴 新增這行：抓取 HTML 中的登出按鈕
         const logoutFab = document.getElementById('logout-fab'); 
 
         fab.addEventListener('click', async () => {
             if (!isAdmin) {
-                // --- 登入邏輯 ---
+                // 1. 輸入密碼
                 const { value: password } = await Swal.fire({
                     title: '管理員登入',
                     input: 'password',
@@ -768,7 +845,7 @@
                         autocapitalize: 'off',
                         autocorrect: 'off',
                         spellcheck: 'false',
-                        name: 'password',                        
+                        name: 'password'
                     },
                     showCancelButton: true,
                     confirmButtonText: '登入',
@@ -776,35 +853,56 @@
                 });
 
                 if (password) {
-                    adminPassword = password;
-                    isAdmin = true;
-                    document.body.classList.add('is-admin');
-                    
-                    // 變身為「新增按鈕」 (綠色 +)
-                    fab.textContent = '+'; 
-                    fab.classList.add('admin-active');
-                    
-                    // 🔴 關鍵修正：告訴登出按鈕「顯示出來」！
-                    if(logoutFab) logoutFab.classList.add('show');
-
-                    resetLogoutTimer();
-                    filterAndRender(); 
-                    Swal.fire({ 
-                        icon: 'success', 
-                        title: '管理模式啟用', 
-                        toast: true, 
-                        position: 'top-end', 
-                        showConfirmButton: false, 
-                        timer: 2000 
+                    // 2. 顯示驗證中
+                    Swal.fire({
+                        title: '驗證中...',
+                        text: '正在與伺服器確認身分',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
                     });
+
+                    try {
+                        // 3. 送出請求驗證
+                        adminPassword = password;
+                        await sendToAPI('verify');
+
+                        // 4. 驗證成功：切換 UI
+                        isAdmin = true;
+                        document.body.classList.add('is-admin');
+                        
+                        fab.textContent = '+'; 
+                        fab.classList.add('admin-active');
+                        if(logoutFab) logoutFab.classList.add('show');
+
+                        resetLogoutTimer();
+                        filterAndRender(); 
+                        
+                        Swal.fire({ 
+                            icon: 'success', 
+                            title: '登入成功', 
+                            toast: true, 
+                            position: 'top-end', 
+                            showConfirmButton: false, 
+                            timer: 2000 
+                        });
+
+                    } catch (err) {
+                        // 5. 驗證失敗
+                        adminPassword = ""; 
+                        Swal.fire({
+                            icon: 'error',
+                            title: '登入失敗',
+                            text: '密碼錯誤，請重新輸入！'
+                        });
+                    }
                 }
             } else {
-                // --- 已經登入：執行「新增」動作 ---
+                // 已經登入：執行「新增」
                 showForm();
             }
         });
 
-        // --- 2. 登出按鈕點擊事件 ---
+        // 登出按鈕點擊
         if(logoutFab) {
             logoutFab.addEventListener('click', () => {
                 Swal.fire({
@@ -820,31 +918,6 @@
                     }
                 });
             });
-        }
-
-        // --- 3. 執行登出函式 (復原按鈕狀態) ---
-        function performLogout() {
-            if (isAdmin) {
-                isAdmin = false;
-                adminPassword = "";
-                document.body.classList.remove('is-admin');
-                
-                // 復原為「齒輪」
-                fab.textContent = '⚙️';
-                fab.classList.remove('admin-active');
-                
-                // 🔴 關鍵修正：隱藏登出按鈕
-                if(logoutFab) logoutFab.classList.remove('show');
-
-                Swal.fire({
-                    icon: 'info',
-                    title: '已登出',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            }
         }
 
         async function showForm(item = null) {
@@ -914,6 +987,35 @@
                     }
                 }
             });
+        }
+        
+        // --- 彈窗控制邏輯 ---
+        const modal = document.getElementById("desc-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalBody = document.getElementById("modal-body");
+        const closeBtn = document.getElementsByClassName("close-modal")[0];
+
+        function showDesc(e, id) {
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            
+            const item = allData.find(d => String(d.id) === String(id));
+            if (!item) return;
+
+            modalTitle.innerText = item.title;
+            modalBody.innerText = item.description ? item.description : "此作品暫無詳細描述。";
+            
+            modal.style.display = "block";
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
         }
     </script>
 </body>
