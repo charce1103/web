@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>小閒工作室</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -10,15 +10,21 @@
     <style>
         :root {
             --primary-color: #4a90e2;
+            --primary-dark: #357abd;
             --accent-color: #ff6b6b;
-            --bg-color: #f8f9fa;
+            --bg-color: #f4f6f9;
+            --sidebar-bg: #ffffff;
             --card-bg: #ffffff;
             --text-main: #2c3e50;
             --text-sec: #7f8c8d;
-            --shadow: 0 4px 6px rgba(0,0,0,0.05);
-            --shadow-hover: 0 10px 20px rgba(0,0,0,0.12);
             --radius: 12px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --header-height: 70px;
+            --sidebar-width: 260px;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -28,87 +34,210 @@
             padding: 0;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px; /* 預留手機版底部選單空間 */
         }
 
-        header {
-            background: var(--card-bg);
-            padding: 1rem 5%;
-            box-shadow: var(--shadow);
+        /* --- 1. App Layout (左右佈局) --- */
+        .app-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* --- 2. Sidebar (桌面版左側選單) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            padding: 2rem 1.5rem;
+            height: 100vh;
             position: sticky;
             top: 0;
-            z-index: 100;
+            overflow-y: auto;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            flex-shrink: 0;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .menu-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 標籤雲樣式 */
+        .tag-cloud {
+            display: flex;
             flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-tag {
+            padding: 6px 14px;
+            background: #f0f4f8;
+            color: var(--text-main);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-tag:hover {
+            background: #e1e8ef;
+            transform: translateY(-1px);
+        }
+
+        .nav-tag.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+        }
+
+        /* --- 3. Main Content (右側內容) --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            width: 100%; /* 防止 Grid 溢出 */
+        }
+
+        /* 搜尋列 */
+        .search-bar-wrapper {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            padding-left: 45px;
+            border: none;
+            border-radius: 50px;
+            background: white;
+            box-shadow: var(--shadow-sm);
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+        }
+
+        /* --- 4. 置頂連結區塊 (Pinned Section) --- */
+        .pinned-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid var(--accent-color);
+            background: linear-gradient(to right, #fff, #fffafb);
+        }
+
+        .pinned-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pinned-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 15px;
         }
 
-        .logo {
+        .pinned-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .pinned-item:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .pinned-item::before {
+            content: '🔗';
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        /* --- 5. 作品 Grid 區塊 --- */
+        .section-header {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--primary-color);
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        input[type="text"], select {
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: 0.3s;
-            background-color: #fff;
-        }
-
-        input[type="text"]:focus, select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 20px;
-            min-height: 80vh;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            padding-left: 10px;
+            border-left: 4px solid var(--primary-color);
         }
 
         .portfolio-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
         }
 
         .card {
             background: var(--card-bg);
             border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-sm);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
+            box-shadow: var(--shadow-md);
         }
 
-        .card-img-wrapper {
+        .card-img-link {
+            display: block;
             width: 100%;
-            height: 200px;
+            height: 180px;
             overflow: hidden;
             background: #eee;
-            border-bottom: 1px solid #f0f0f0;
         }
 
         .card-img {
@@ -118,92 +247,70 @@
             transition: transform 0.5s ease;
         }
 
-        .card:hover .card-img {
-            transform: scale(1.08);
-        }
+        .card:hover .card-img { transform: scale(1.08); }
 
         .card-content {
-            padding: 20px;
+            padding: 18px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
 
-        .tags-container {
+        .card-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        .card-tag {
-            font-size: 0.75rem;
+        .mini-tag {
+            font-size: 0.7rem;
             color: var(--primary-color);
-            font-weight: 600;
             background: rgba(74, 144, 226, 0.1);
-            padding: 4px 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .card-tag:hover {
-            background: var(--primary-color);
-            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            margin: 0 0 10px 0;
-            color: var(--text-main);
+            margin: 0 0 8px 0;
             line-height: 1.4;
         }
 
+        .card-title-link {
+            color: var(--text-main);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .card-title-link:hover { color: var(--primary-color); }
+
         .card-desc {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-sec);
-            margin-bottom: 20px;
-            flex-grow: 1;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .card-btn {
-            display: block;
-            text-align: center;
-            background: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-
-        .card-btn:hover {
-            background: #357abd;
-        }
-
+        /* --- 6. Admin Controls --- */
         .admin-overlay {
             display: none;
             position: absolute;
-            top: 15px;
-            right: 15px;
-            gap: 8px;
+            top: 10px;
+            right: 10px;
+            gap: 5px;
             z-index: 10;
         }
         
-        body.is-admin .admin-overlay {
-            display: flex;
-        }
+        body.is-admin .admin-overlay { display: flex; }
 
         .icon-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
@@ -211,157 +318,350 @@
             align-items: center;
             justify-content: center;
             background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            font-size: 1rem;
-            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
         }
 
-        .icon-btn:hover { transform: scale(1.1); }
         .edit-btn { color: var(--primary-color); }
         .del-btn { color: var(--accent-color); }
 
+        /* Floating Admin Button */
         .fab {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
+            bottom: 90px; /* 避開底部選單 */
+            right: 20px;
+            width: 50px;
+            height: 50px;
             background: var(--text-main);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             cursor: pointer;
             z-index: 1000;
-            transition: transform 0.3s, background 0.3s;
+            transition: transform 0.3s;
+        }
+        
+        .fab.admin-active { background: var(--primary-color); }
+
+        /* --- 7. Mobile Responsive Design --- */
+        @media (max-width: 768px) {
+            .app-wrapper {
+                flex-direction: column;
+            }
+
+            /* 手機版：隱藏左側 Sidebar，改為底部固定選單 */
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                width: 100%;
+                height: 70px; /* 固定高度 */
+                padding: 10px 15px;
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+                background: white;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                z-index: 2000;
+                border-right: none;
+                border-top: 1px solid #eee;
+                overflow-x: auto; /* 允許橫向捲動 */
+                overflow-y: hidden;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* 隱藏 Sidebar 中的標題和文字標籤，只留 Tag Cloud */
+            .sidebar .app-title, .sidebar .menu-label {
+                display: none;
+            }
+
+            .sidebar .tag-cloud {
+                flex-wrap: nowrap; /* 不換行，改成橫向排列 */
+                width: 100%;
+            }
+
+            .nav-tag {
+                flex-shrink: 0; /* 防止標籤被壓縮 */
+                padding: 8px 16px;
+                font-size: 0.95rem;
+                border: 1px solid #eee;
+            }
+
+            /* 手機版主內容區調整 */
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .search-input {
+                font-size: 16px; /* 防止 iOS 縮放 */
+            }
+
+            .fab {
+                bottom: 85px; /* 調整 FAB 位置 */
+            }
+            
+            /* 手機版標題顯示在上方 */
+            .mobile-header {
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .mobile-header h1 {
+                margin: 0;
+                color: var(--primary-color);
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-header { display: none; }
         }
 
-        .fab:hover { transform: scale(1.1) rotate(90deg); }
-        .fab.admin-active { background: var(--primary-color); transform: rotate(0); }
-        .fab.admin-active:hover { transform: scale(1.1); }
-
+        /* Loading */
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 100px auto;
+            margin: 50px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @media (max-width: 600px) {
-            header { flex-direction: column; align-items: stretch; }
-            .controls { flex-direction: column; }
-            .card-img-wrapper { height: 180px; }
-        }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo" onclick="location.reload()">小閒工作室</div>
-        <div class="controls">
-            <select id="filter-category" aria-label="分類篩選">
-                <option value="all">載入中...</option>
-            </select>
-            <input type="text" id="search-input" placeholder="🔍 搜尋作品關鍵字...">
-        </div>
-    </header>
+    <div class="app-wrapper">
+        
+        <nav class="sidebar" id="sidebar-nav">
+            <div class="app-title" onclick="location.reload()">小閒工作室</div>
+            <div>
+                <div class="menu-label">分類瀏覽</div>
+                <div class="tag-cloud" id="tag-cloud-container">
+                    </div>
+            </div>
+        </nav>
 
-    <div class="container">
-        <div id="loading" class="loader"></div>
-        <div id="grid" class="portfolio-grid"></div>
+        <main class="main-content">
+            
+            <div class="mobile-header">
+                <h1 onclick="location.reload()">小閒工作室</h1>
+            </div>
+
+            <div class="search-bar-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="search-input" placeholder="搜尋作品名稱或關鍵字...">
+            </div>
+
+            <div id="pinned-container" class="pinned-section" style="display: none;">
+                <div class="pinned-title">⭐ 精選連結 / 公告</div>
+                <div class="pinned-grid" id="pinned-grid"></div>
+            </div>
+
+            <div id="loading" class="loader"></div>
+
+            <div class="section-header">作品集</div>
+            <div id="grid" class="portfolio-grid"></div>
+        </main>
+
     </div>
 
     <div id="admin-fab" class="fab" title="管理員登入">⚙️</div>
 
     <script>
         // ==========================================
-        // 設定區域：請將下面的 URL 替換成你的 GAS 網址
+        // 設定區域：請確認此網址正確
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbyjABkbVoHep96Zi777VjUxqFItnLVY1g2eYbJ7rgFIkBpWOAmnCkGGkZzO8nCubo7GvQ/exec"; 
         
         // 全域變數
         let allData = [];
+        let currentFilter = 'all'; // 目前選中的分類
         let isAdmin = false;
         let adminPassword = "";
+        
+        // 自動登出變數
+        let logoutTimer;
+        const TIMEOUT_DURATION = 20 * 60 * 1000; // 20分鐘
 
         // 初始化
         window.onload = function() {
             fetchData();
         };
 
-        // 1. 透過 Fetch API 讀取資料
+        // 閒置偵測
+        document.addEventListener('mousemove', resetLogoutTimer);
+        document.addEventListener('keydown', resetLogoutTimer);
+        document.addEventListener('click', resetLogoutTimer);
+        document.addEventListener('touchstart', resetLogoutTimer);
+
+        function resetLogoutTimer() {
+            if (isAdmin) {
+                clearTimeout(logoutTimer);
+                logoutTimer = setTimeout(performLogout, TIMEOUT_DURATION);
+            }
+        }
+
+        function performLogout() {
+            if (isAdmin) {
+                isAdmin = false;
+                adminPassword = "";
+                document.body.classList.remove('is-admin');
+                const fab = document.getElementById('admin-fab');
+                fab.textContent = '⚙️';
+                fab.classList.remove('admin-active');
+                Swal.fire({
+                    icon: 'info',
+                    title: '閒置過久',
+                    text: '為了安全起見，系統已自動將您登出管理模式。',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            }
+        }
+
+        // 1. 讀取資料
         async function fetchData() {
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error("網路連線異常");
                 const data = await response.json();
-                renderGrid(data);
+                processData(data);
             } catch (error) {
                 console.error("載入失敗:", error);
                 document.getElementById('loading').innerHTML = '<p style="text-align:center; color:red;">無法載入資料，請稍後再試。</p>';
             }
         }
 
-        // 2. 渲染畫面
-        function renderGrid(data) {
+        // 2. 資料處理 (分離置頂與一般)
+        function processData(data) {
             allData = data;
-            const grid = document.getElementById('grid');
             const loader = document.getElementById('loading');
-            const categorySelect = document.getElementById('filter-category');
-            
             loader.style.display = 'none';
-            grid.innerHTML = '';
 
+            renderSidebar(data);
+            filterAndRender();
+        }
+
+        // 3. 渲染側邊欄/底部選單 (標籤雲)
+        function renderSidebar(data) {
+            const tagContainer = document.getElementById('tag-cloud-container');
             const splitRegex = /[|,\uff0c\u3001]/;
+            
+            // 提取所有標籤
             const allTags = [...new Set(
                 data.flatMap(item => String(item.category).split(splitRegex).map(tag => tag.trim()))
             )].filter(tag => tag !== "").sort();
 
-            let catOptions = '<option value="all">所有分類</option>';
-            allTags.forEach(cat => {
-                catOptions += `<option value="${cat}">${cat}</option>`;
+            let html = `<div class="nav-tag active" onclick="setFilter('all', this)">全部</div>`;
+            allTags.forEach(tag => {
+                html += `<div class="nav-tag" onclick="setFilter('${tag}', this)">${tag}</div>`;
             });
-            categorySelect.innerHTML = catOptions;
-
-            updateDisplay(allData);
+            tagContainer.innerHTML = html;
         }
 
-        // 3. 顯示邏輯
-        function updateDisplay(dataToShow) {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
+        // 切換分類
+        function setFilter(tag, element) {
+            currentFilter = tag;
+            
+            // 更新 UI 狀態
+            document.querySelectorAll('.nav-tag').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+
+            // 如果是手機版，點擊後自動滾動讓被點的標籤置中 (Optional)
+            if(window.innerWidth <= 768 && element) {
+                element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+
+            filterAndRender();
+        }
+
+        // 4. 核心渲染邏輯 (置頂 + 一般)
+        function filterAndRender() {
+            const search = document.getElementById('search-input').value.toLowerCase();
             const splitRegex = /[|,\uff0c\u3001]/;
 
-            if (dataToShow.length === 0) {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">沒有找到相關作品。</p>';
+            // 步驟 A: 篩選符合條件的資料
+            const filtered = allData.filter(item => {
+                const matchSearch = String(item.title).toLowerCase().includes(search) || 
+                                    String(item.description).toLowerCase().includes(search);
+                
+                const itemTags = String(item.category).split(splitRegex).map(t => t.trim());
+                const matchCat = currentFilter === 'all' || itemTags.includes(currentFilter);
+                
+                return matchSearch && matchCat;
+            });
+
+            // 步驟 B: 分離「置頂 (ID開頭a)」與「一般」
+            // 注意：置頂項目也要受搜尋和分類影響，如果你希望置頂永遠顯示，請調整這裡
+            const pinnedItems = filtered.filter(d => String(d.id).toLowerCase().startsWith('a'));
+            const normalItems = filtered.filter(d => !String(d.id).toLowerCase().startsWith('a'));
+
+            // 渲染置頂區塊
+            renderPinned(pinnedItems);
+            // 渲染一般 Grid
+            renderGrid(normalItems);
+        }
+
+        function renderPinned(items) {
+            const container = document.getElementById('pinned-container');
+            const grid = document.getElementById('pinned-grid');
+            
+            if (items.length === 0) {
+                container.style.display = 'none';
                 return;
             }
 
-            dataToShow.forEach(item => {
+            container.style.display = 'block';
+            grid.innerHTML = items.map(item => `
+                <a href="${item.link}" target="_blank" class="pinned-item">
+                    ${item.title}
+                    ${isAdmin ? `<span onclick="event.preventDefault(); editItem('${item.id}')" style="margin-left:auto; font-size:0.8rem; cursor:pointer;">✏️</span>` : ''}
+                </a>
+            `).join('');
+        }
+
+        function renderGrid(items) {
+            const grid = document.getElementById('grid');
+            const splitRegex = /[|,\uff0c\u3001]/;
+            grid.innerHTML = '';
+
+            if (items.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">沒有相關內容。</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                // 標籤 HTML
                 const tagsHtml = String(item.category).split(splitRegex)
                     .map(tag => tag.trim())
                     .filter(tag => tag !== "")
-                    .map(tag => `<span class="card-tag" onclick="event.stopPropagation(); quickFilter('${tag}')">${tag}</span>`)
+                    .map(tag => `<span class="mini-tag">${tag}</span>`)
                     .join('');
 
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <div class="card-img-wrapper">
-                        <img src="${item.image}" alt="${item.title}" class="card-img" onerror="this.src='../images/image001.jpg'">
-                    </div>
+                    <a href="${item.link}" target="_blank" class="card-img-link">
+                        <img src="${item.image}" alt="${item.title}" class="card-img" onerror="this.src='images/image001.jpg'">
+                    </a>
                     <div class="card-content">
-                        <div class="tags-container">${tagsHtml}</div>
-                        <h3 class="card-title">${item.title}</h3>
+                        <div class="card-tags">${tagsHtml}</div>
+                        <h3 class="card-title">
+                            <a href="${item.link}" target="_blank" class="card-title-link">${item.title}</a>
+                        </h3>
                         <p class="card-desc">${item.description}</p>
-                        <a href="${item.link}" target="_blank" class="card-btn">查看詳情</a>
                     </div>
                     <div class="admin-overlay">
                         <button class="icon-btn edit-btn" onclick="editItem('${item.id}')">✏️</button>
@@ -372,39 +672,11 @@
             });
         }
 
-        // 4. 篩選
-        document.getElementById('search-input').addEventListener('input', filterData);
-        document.getElementById('filter-category').addEventListener('change', filterData);
+        // 5. 監聽搜尋輸入
+        document.getElementById('search-input').addEventListener('input', filterAndRender);
 
-        function filterData() {
-            const search = document.getElementById('search-input').value.toLowerCase();
-            const selectedCat = document.getElementById('filter-category').value;
-            const splitRegex = /[|,\uff0c\u3001]/;
-
-            const filtered = allData.filter(item => {
-                const matchSearch = String(item.title).toLowerCase().includes(search) || 
-                                    String(item.description).toLowerCase().includes(search);
-                const itemTags = String(item.category).split(splitRegex).map(t => t.trim());
-                const matchCat = selectedCat === 'all' || itemTags.includes(selectedCat);
-                return matchSearch && matchCat;
-            });
-
-            updateDisplay(filtered);
-        }
-
-        function quickFilter(tag) {
-            const select = document.getElementById('filter-category');
-            const options = Array.from(select.options).map(opt => opt.value);
-            if (options.includes(tag)) {
-                select.value = tag;
-                select.dispatchEvent(new Event('change'));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        // 5. API 互動函式 (傳送資料給 GAS)
+        // 6. API 與 Admin 邏輯 (保持不變)
         async function sendToAPI(action, payload = {}, id = null) {
-            // 使用 text/plain 避免 CORS 預檢請求 (Preflight)
             const body = JSON.stringify({
                 action: action,
                 password: adminPassword,
@@ -423,14 +695,17 @@
             return result.message;
         }
 
-        // 6. 管理員邏輯
         const fab = document.getElementById('admin-fab');
-        
         fab.addEventListener('click', async () => {
             if (!isAdmin) {
                 const { value: password } = await Swal.fire({
                     title: '管理員登入',
                     input: 'password',
+                    inputAttributes: {
+                        autocapitalize: 'off',
+                        autocorrect: 'off',
+                        autocomplete: 'current-password' 
+                    },
                     showCancelButton: true,
                     confirmButtonText: '登入'
                 });
@@ -441,6 +716,8 @@
                     document.body.classList.add('is-admin');
                     fab.textContent = '+'; 
                     fab.classList.add('admin-active');
+                    resetLogoutTimer();
+                    filterAndRender(); // 重新渲染以顯示編輯按鈕
                     Swal.fire({ icon: 'success', title: '管理模式啟用', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
                 }
             } else {
@@ -449,6 +726,7 @@
         });
 
         async function showForm(item = null) {
+            resetLogoutTimer();
             const isEdit = !!item;
             const { value: formValues } = await Swal.fire({
                 title: isEdit ? '編輯作品' : '新增作品',
@@ -478,7 +756,8 @@
                     const action = isEdit ? 'update' : 'add';
                     const msg = await sendToAPI(action, formValues);
                     Swal.fire('成功', msg, 'success');
-                    fetchData(); // 重新整理
+                    fetchData(); 
+                    resetLogoutTimer();
                 } catch (err) {
                     Swal.fire('錯誤', err.message, 'error');
                 }
@@ -486,11 +765,13 @@
         }
 
         function editItem(id) {
+            resetLogoutTimer();
             const item = allData.find(d => String(d.id) === String(id));
             if (item) showForm(item);
         }
 
         function deleteItem(id) {
+            resetLogoutTimer();
             Swal.fire({
                 title: '確定刪除?',
                 icon: 'warning',
@@ -504,6 +785,7 @@
                         const msg = await sendToAPI('delete', {}, id);
                         Swal.fire('成功', msg, 'success');
                         fetchData();
+                        resetLogoutTimer();
                     } catch (err) {
                         Swal.fire('錯誤', err.message, 'error');
                     }
