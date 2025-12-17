@@ -171,8 +171,8 @@
         .pinned-section {
             background: white;
             border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 3rem;
+            padding: 10px 15px;
+            margin-bottom: 20px;
             box-shadow: var(--shadow-sm);
             border-left: 6px solid var(--color-lavender);
             background: linear-gradient(to right, #fff, #f9f9fc);
@@ -282,7 +282,7 @@
         .card:hover .card-img { transform: scale(1.08); }
 
         .card-content {
-            padding: 22px;
+            padding: 12px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -305,9 +305,9 @@
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            margin: 0 0 10px 0;
+            margin: 0 0 5px 0;
             line-height: 1.4;
         }
 
@@ -320,8 +320,9 @@
         .card-title-link:hover { color: var(--color-lavender); }
 
         .card-desc {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-sec);
+			line-height: 1.4;      /* 加入這行，讓多行文字更緊湊 */
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
@@ -470,7 +471,7 @@
         <nav class="sidebar" id="sidebar-nav">
             <div class="app-title" onclick="location.reload()">小閒工作室</div>
             <div>
-                <div class="menu-label">分類標籤</div>
+              <!--  <div class="menu-label">分類標籤</div>  -->
                 <div class="tag-cloud" id="tag-cloud-container"></div>
             </div>
         </nav>
@@ -486,13 +487,13 @@
             </div>
 
             <div id="pinned-container" class="pinned-section" style="display: none;">
-                <div class="pinned-title">精選內容</div>
+               <!--  <div class="pinned-title">精選內容</div>  -->
                 <div class="pinned-grid" id="pinned-grid"></div>
             </div>
 
             <div id="loading" class="loader"></div>
 
-            <div class="section-header">所有作品</div>
+            <!--  <div class="section-header">所有作品</div>  -->
             <div id="grid" class="portfolio-grid"></div>
         </main>
     </div>
