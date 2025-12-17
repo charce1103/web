@@ -190,7 +190,7 @@
 
         .pinned-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 15px;
         }
 
@@ -232,7 +232,7 @@
 
         .portfolio-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 30px;
         }
 
@@ -598,7 +598,10 @@
             
             const allTags = [...new Set(
                 data.flatMap(item => String(item.category).split(splitRegex).map(tag => tag.trim()))
-            )].filter(tag => tag !== "").sort();
+            // 修改後的程式碼 (加入過濾條件)：
+			const allTags = [...new Set(
+			data.flatMap(item => String(item.category).split(splitRegex).map(tag => tag.trim()))
+			)].filter(tag => tag !== "" && tag !== "精選內容").sort();
 
             let html = `<div class="nav-tag active" onclick="setFilter('all', this)">全部</div>`;
             allTags.forEach(tag => {
@@ -619,24 +622,40 @@
         }
 
         // 3. 核心渲染
-        function filterAndRender() {
-            const search = document.getElementById('search-input').value.toLowerCase();
-            const splitRegex = /[|,\uff0c\u3001]/;
+		function filterAndRender() {
+			const search = document.getElementById('search-input').value.toLowerCase();
+		const splitRegex = /[|,\uff0c\u3001]/;
+		const FEATURED_KEYWORD = "精選內容"; // 設定關鍵字
 
-            const filtered = allData.filter(item => {
-                const matchSearch = String(item.title).toLowerCase().includes(search) || 
-                                    String(item.description).toLowerCase().includes(search);
-                const itemTags = String(item.category).split(splitRegex).map(t => t.trim());
-                const matchCat = currentFilter === 'all' || itemTags.includes(currentFilter);
-                return matchSearch && matchCat;
-            });
+		// 1. 先篩選出符合搜尋 & 左側選單分類 的資料
+		const filtered = allData.filter(item => {
+			const matchSearch = String(item.title).toLowerCase().includes(search) || 
+								String(item.description).toLowerCase().includes(search);
+        
+			const itemTags = String(item.category).split(splitRegex).map(t => t.trim());
+			// 注意：如果目前選的是 'all'，我們顯示所有資料（包含精選內容），
+			// 但如果選了特定分類，就只顯示該分類。
+			const matchCat = currentFilter === 'all' || itemTags.includes(currentFilter);
+        
+			return matchSearch && matchCat;
+		});
 
-            const pinnedItems = filtered.filter(d => String(d.id).toLowerCase().startsWith('a'));
-            const normalItems = filtered.filter(d => !String(d.id).toLowerCase().startsWith('a'));
+    // 2. 分離「精選內容」與「一般作品」
+    // 邏輯：分類中有包含 "精選內容" 的，就去置頂區；沒有的，就去下面 Grid
+    const pinnedItems = filtered.filter(d => {
+        const tags = String(d.category).split(splitRegex).map(t => t.trim());
+        return tags.includes(FEATURED_KEYWORD);
+    });
 
-            renderPinned(pinnedItems);
-            renderGrid(normalItems);
-        }
+    const normalItems = filtered.filter(d => {
+        const tags = String(d.category).split(splitRegex).map(t => t.trim());
+        return !tags.includes(FEATURED_KEYWORD);
+    });
+
+    // 3. 渲染
+    renderPinned(pinnedItems);
+    renderGrid(normalItems);
+}
 
         function renderPinned(items) {
             const container = document.getElementById('pinned-container');
