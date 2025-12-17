@@ -330,28 +330,82 @@
         .edit-btn { color: var(--color-deep-khaki); }
         .del-btn { color: #d33; }
 
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            background: var(--color-deep-khaki);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 15px rgba(62, 68, 43, 0.4);
-            cursor: pointer;
-            z-index: 1000;
-            transition: transform 0.3s, background 0.3s;
-        }
-        
-        .fab:hover { background: var(--color-ebony); transform: scale(1.05); }
-        .fab.admin-active { background: #d33; transform: rotate(45deg); } 
-        .fab.admin-active:hover { background: #b00; }
+        /* --- 修改原本的 FAB 設定 --- */
+		.fab {
+			/* 保持原本的位置設定 */
+			position: fixed;
+			bottom: 90px; 
+			right: 25px;
+			width: 56px;
+			height: 56px;
+			background: var(--color-deep-khaki); /* 未登入時的顏色 */
+			color: white;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			box-shadow: 0 4px 15px rgba(62, 68, 43, 0.4);
+			cursor: pointer;
+			z-index: 1000;
+			transition: all 0.3s;
+		}
+
+		/* 登入後的「新增」按鈕：變成綠色 + 號 */
+		.fab.admin-active {
+			background: #5aa760; /* 🟢 綠色 */
+			transform: rotate(0deg); /* 保持 + 號，不旋轉 */
+		}
+
+		.fab.admin-active:hover {
+			background: #4a8e50; /* 深一點的綠色 */
+			transform: scale(1.05);
+		}
+
+		/* --- 新增：獨立的登出按鈕 (紅色 X) --- */
+		.fab-logout {
+			position: fixed;
+			/* 位置設在主按鈕的上方 (90px + 56px + 15px間距) */
+			bottom: 160px; 
+			right: 25px; /* 對齊中心 */
+			width: 56px;
+			height: 56px;
+			background: #d33; /* 🔴 紅色 */
+			color: white;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			font-weight: bold;
+			box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+			cursor: pointer;
+			z-index: 999;
+    
+			/* 預設隱藏，登入後才滑出來 */
+			opacity: 0;
+			pointer-events: none;
+			transform: translateY(20px) scale(0.8);
+			transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		}
+
+		/* 顯示登出按鈕時的狀態 */
+		.fab-logout.show {
+			opacity: 1;
+			pointer-events: auto;
+			transform: translateY(0) scale(1);
+		}
+
+		.fab-logout:hover {
+			background: #b00;
+			transform: scale(1.1);
+		}
+
+		/* 手機版位置微調 */
+		@media (max-width: 768px) {
+			.fab { bottom: 90px; right: 20px; }
+			.fab-logout { bottom: 160px; right: 27px; }
+		}
 
         /* --- Mobile Responsive --- */
         @media (max-width: 768px) {
@@ -465,6 +519,7 @@
     </div>
 
     <div id="admin-fab" class="fab" title="管理員登入">⚙️</div>
+	<div id="logout-fab" class="fab-logout" title="登出管理模式">x</div>
 
     <script>
         // =========================================================================
@@ -696,9 +751,15 @@
             return result.message;
         }
 
+        // --- 1. 管理按鈕點擊事件 (登入 / 新增) ---
         const fab = document.getElementById('admin-fab');
+        
+        // 🔴 新增這行：抓取 HTML 中的登出按鈕
+        const logoutFab = document.getElementById('logout-fab'); 
+
         fab.addEventListener('click', async () => {
             if (!isAdmin) {
+                // --- 登入邏輯 ---
                 const { value: password } = await Swal.fire({
                     title: '管理員登入',
                     input: 'password',
@@ -707,8 +768,7 @@
                         autocapitalize: 'off',
                         autocorrect: 'off',
                         spellcheck: 'false',
-                        name: 'password',
-                        id: 'swal-input-password'
+                        name: 'password',                        
                     },
                     showCancelButton: true,
                     confirmButtonText: '登入',
@@ -719,8 +779,14 @@
                     adminPassword = password;
                     isAdmin = true;
                     document.body.classList.add('is-admin');
+                    
+                    // 變身為「新增按鈕」 (綠色 +)
                     fab.textContent = '+'; 
                     fab.classList.add('admin-active');
+                    
+                    // 🔴 關鍵修正：告訴登出按鈕「顯示出來」！
+                    if(logoutFab) logoutFab.classList.add('show');
+
                     resetLogoutTimer();
                     filterAndRender(); 
                     Swal.fire({ 
@@ -733,9 +799,53 @@
                     });
                 }
             } else {
+                // --- 已經登入：執行「新增」動作 ---
                 showForm();
             }
         });
+
+        // --- 2. 登出按鈕點擊事件 ---
+        if(logoutFab) {
+            logoutFab.addEventListener('click', () => {
+                Swal.fire({
+                    title: '確定登出?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: '登出',
+                    cancelButtonText: '取消'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performLogout();
+                    }
+                });
+            });
+        }
+
+        // --- 3. 執行登出函式 (復原按鈕狀態) ---
+        function performLogout() {
+            if (isAdmin) {
+                isAdmin = false;
+                adminPassword = "";
+                document.body.classList.remove('is-admin');
+                
+                // 復原為「齒輪」
+                fab.textContent = '⚙️';
+                fab.classList.remove('admin-active');
+                
+                // 🔴 關鍵修正：隱藏登出按鈕
+                if(logoutFab) logoutFab.classList.remove('show');
+
+                Swal.fire({
+                    icon: 'info',
+                    title: '已登出',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        }
 
         async function showForm(item = null) {
             resetLogoutTimer();
