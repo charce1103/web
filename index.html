@@ -4,28 +4,512 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>小閒工作室</title>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --accent-color: #ff6b6b;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sec: #7f8c8d;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-hover: 0 10px 20px rgba(0,0,0,0.12);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 1rem 5%;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], select {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            min-height: 80vh;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-img-wrapper {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #eee;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img {
+            transform: scale(1.08);
+        }
+
+        .card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            background: rgba(74, 144, 226, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .card-tag:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--text-sec);
+            margin-bottom: 20px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-btn {
+            display: block;
+            text-align: center;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .card-btn:hover {
+            background: #357abd;
+        }
+
+        .admin-overlay {
+            display: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        body.is-admin .admin-overlay {
+            display: flex;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .icon-btn:hover { transform: scale(1.1); }
+        .edit-btn { color: var(--primary-color); }
+        .del-btn { color: var(--accent-color); }
+
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--text-main);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
+        .fab.admin-active { background: var(--primary-color); transform: rotate(0); }
+        .fab.admin-active:hover { transform: scale(1.1); }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 100px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            header { flex-direction: column; align-items: stretch; }
+            .controls { flex-direction: column; }
+            .card-img-wrapper { height: 180px; }
+        }
+    </style>
 </head>
 <body>
 
-    <header class="app-header">
-        <h1 class="header-title">小閒工作室</h1>
-        
-        <div class="filter-controls">
-            <input type="search" id="search-bar" placeholder="🔍 搜尋作品名稱...">
+    <header>
+        <div class="logo" onclick="location.reload()">小閒工作室</div>
+        <div class="controls">
+            <select id="filter-category" aria-label="分類篩選">
+                <option value="all">載入中...</option>
+            </select>
+            <input type="text" id="search-input" placeholder="🔍 搜尋作品關鍵字...">
         </div>
-        
     </header>
 
-    <div id="tag-cloud-container" class="tag-cloud-container">
-        </div>
-    
-    <div id="mobile-filter-bar" class="mobile-filter-bar">
-        <select id="category-dropdown" aria-label="分類篩選"></select>
+    <div class="container">
+        <div id="loading" class="loader"></div>
+        <div id="grid" class="portfolio-grid"></div>
     </div>
 
-    <main id="portfolio-grid" class="portfolio-grid"></main>
+    <div id="admin-fab" class="fab" title="管理員登入">⚙️</div>
 
-    <script src="script.js"></script>
+    <script>
+        // ==========================================
+        // 設定區域：請將下面的 URL 替換成你的 GAS 網址
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbyjABkbVoHep96Zi777VjUxqFItnLVY1g2eYbJ7rgFIkBpWOAmnCkGGkZzO8nCubo7GvQ/exec"; 
+        
+        // 全域變數
+        let allData = [];
+        let isAdmin = false;
+        let adminPassword = "";
+
+        // 初始化
+        window.onload = function() {
+            fetchData();
+        };
+
+        // 1. 透過 Fetch API 讀取資料
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error("網路連線異常");
+                const data = await response.json();
+                renderGrid(data);
+            } catch (error) {
+                console.error("載入失敗:", error);
+                document.getElementById('loading').innerHTML = '<p style="text-align:center; color:red;">無法載入資料，請稍後再試。</p>';
+            }
+        }
+
+        // 2. 渲染畫面
+        function renderGrid(data) {
+            allData = data;
+            const grid = document.getElementById('grid');
+            const loader = document.getElementById('loading');
+            const categorySelect = document.getElementById('filter-category');
+            
+            loader.style.display = 'none';
+            grid.innerHTML = '';
+
+            const splitRegex = /[|,\uff0c\u3001]/;
+            const allTags = [...new Set(
+                data.flatMap(item => String(item.category).split(splitRegex).map(tag => tag.trim()))
+            )].filter(tag => tag !== "").sort();
+
+            let catOptions = '<option value="all">所有分類</option>';
+            allTags.forEach(cat => {
+                catOptions += `<option value="${cat}">${cat}</option>`;
+            });
+            categorySelect.innerHTML = catOptions;
+
+            updateDisplay(allData);
+        }
+
+        // 3. 顯示邏輯
+        function updateDisplay(dataToShow) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            const splitRegex = /[|,\uff0c\u3001]/;
+
+            if (dataToShow.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">沒有找到相關作品。</p>';
+                return;
+            }
+
+            dataToShow.forEach(item => {
+                const tagsHtml = String(item.category).split(splitRegex)
+                    .map(tag => tag.trim())
+                    .filter(tag => tag !== "")
+                    .map(tag => `<span class="card-tag" onclick="event.stopPropagation(); quickFilter('${tag}')">${tag}</span>`)
+                    .join('');
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-img-wrapper">
+                        <img src="${item.image}" alt="${item.title}" class="card-img" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                    </div>
+                    <div class="card-content">
+                        <div class="tags-container">${tagsHtml}</div>
+                        <h3 class="card-title">${item.title}</h3>
+                        <p class="card-desc">${item.description}</p>
+                        <a href="${item.link}" target="_blank" class="card-btn">查看詳情</a>
+                    </div>
+                    <div class="admin-overlay">
+                        <button class="icon-btn edit-btn" onclick="editItem('${item.id}')">✏️</button>
+                        <button class="icon-btn del-btn" onclick="deleteItem('${item.id}')">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 4. 篩選
+        document.getElementById('search-input').addEventListener('input', filterData);
+        document.getElementById('filter-category').addEventListener('change', filterData);
+
+        function filterData() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const selectedCat = document.getElementById('filter-category').value;
+            const splitRegex = /[|,\uff0c\u3001]/;
+
+            const filtered = allData.filter(item => {
+                const matchSearch = String(item.title).toLowerCase().includes(search) || 
+                                    String(item.description).toLowerCase().includes(search);
+                const itemTags = String(item.category).split(splitRegex).map(t => t.trim());
+                const matchCat = selectedCat === 'all' || itemTags.includes(selectedCat);
+                return matchSearch && matchCat;
+            });
+
+            updateDisplay(filtered);
+        }
+
+        function quickFilter(tag) {
+            const select = document.getElementById('filter-category');
+            const options = Array.from(select.options).map(opt => opt.value);
+            if (options.includes(tag)) {
+                select.value = tag;
+                select.dispatchEvent(new Event('change'));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 5. API 互動函式 (傳送資料給 GAS)
+        async function sendToAPI(action, payload = {}, id = null) {
+            // 使用 text/plain 避免 CORS 預檢請求 (Preflight)
+            const body = JSON.stringify({
+                action: action,
+                password: adminPassword,
+                data: payload,
+                id: id
+            });
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: body,
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            
+            const result = await response.json();
+            if (result.status === 'error') throw new Error(result.message);
+            return result.message;
+        }
+
+        // 6. 管理員邏輯
+        const fab = document.getElementById('admin-fab');
+        
+        fab.addEventListener('click', async () => {
+            if (!isAdmin) {
+                const { value: password } = await Swal.fire({
+                    title: '管理員登入',
+                    input: 'password',
+                    showCancelButton: true,
+                    confirmButtonText: '登入'
+                });
+
+                if (password) {
+                    adminPassword = password;
+                    isAdmin = true;
+                    document.body.classList.add('is-admin');
+                    fab.textContent = '+'; 
+                    fab.classList.add('admin-active');
+                    Swal.fire({ icon: 'success', title: '管理模式啟用', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                }
+            } else {
+                showForm();
+            }
+        });
+
+        async function showForm(item = null) {
+            const isEdit = !!item;
+            const { value: formValues } = await Swal.fire({
+                title: isEdit ? '編輯作品' : '新增作品',
+                html:
+                    `<input id="swal-title" class="swal2-input" placeholder="作品名稱" value="${item ? item.title : ''}">` +
+                    `<input id="swal-cat" class="swal2-input" placeholder="分類 (例如: 網頁 | 設計)" value="${item ? item.category : ''}">` +
+                    `<input id="swal-desc" class="swal2-input" placeholder="作品描述" value="${item ? item.description : ''}">` +
+                    `<input id="swal-img" class="swal2-input" placeholder="圖片連結 URL" value="${item ? item.image : ''}">` +
+                    `<input id="swal-link" class="swal2-input" placeholder="作品連結 URL" value="${item ? item.link : ''}">`,
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    return {
+                        id: item ? item.id : null,
+                        title: document.getElementById('swal-title').value,
+                        category: document.getElementById('swal-cat').value,
+                        description: document.getElementById('swal-desc').value,
+                        image: document.getElementById('swal-img').value,
+                        link: document.getElementById('swal-link').value
+                    }
+                }
+            });
+
+            if (formValues) {
+                Swal.fire({ title: '處理中...', didOpen: () => Swal.showLoading() });
+                try {
+                    const action = isEdit ? 'update' : 'add';
+                    const msg = await sendToAPI(action, formValues);
+                    Swal.fire('成功', msg, 'success');
+                    fetchData(); // 重新整理
+                } catch (err) {
+                    Swal.fire('錯誤', err.message, 'error');
+                }
+            }
+        }
+
+        function editItem(id) {
+            const item = allData.find(d => String(d.id) === String(id));
+            if (item) showForm(item);
+        }
+
+        function deleteItem(id) {
+            Swal.fire({
+                title: '確定刪除?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '刪除'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: '刪除中...', didOpen: () => Swal.showLoading() });
+                    try {
+                        const msg = await sendToAPI('delete', {}, id);
+                        Swal.fire('成功', msg, 'success');
+                        fetchData();
+                    } catch (err) {
+                        Swal.fire('錯誤', err.message, 'error');
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
