@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <title>我的 AI 工具導航</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* CSS 樣式區 */
+    :root {
+      --primary-color: #2c3e50;
+      --accent-color: #3498db;
+      --bg-color: #f8f9fa;
+      --card-bg: #fff;
+    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: var(--bg-color); color: #333; }
+    
+    /* Header */
+    header { background: var(--primary-color); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .logo { font-size: 24px; font-weight: bold; display: flex; align-items: center; }
+    .logo img { height: 40px; margin-right: 10px; border-radius: 50%; }
+    
+    .admin-btn { cursor: pointer; font-size: 0.9em; opacity: 0.8; padding: 6px 12px; border-radius: 4px; transition: 0.3s; border: 1px solid transparent; }
+    .admin-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+    body.is-admin .admin-btn { color: #ff9999; border-color: #ff9999; }
+
+    /* Nav - 已移除下拉選單相關樣式 */
+    nav { background: #34495e; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    ul.menu { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; }
+    ul.menu > li { position: relative; }
+    ul.menu > li > a { display: block; padding: 15px 25px; color: #fff; text-decoration: none; font-size: 15px; transition: 0.3s; cursor: pointer; }
+    ul.menu > li:hover > a { background: var(--accent-color); }
+    /* 作用中的選單項目樣式 */
+    ul.menu > li > a.active { background: var(--accent-color); font-weight: bold; border-bottom: 3px solid #fff; }
+
+    /* Layout */
+    .container { 
+      max-width: 95%;   
+      margin: 30px auto; 
+      padding: 0 20px;
+    }
+
+    /* Search Bar */
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto 40px;
+      position: relative;
+    }
+    .search-container input {
+      width: 100%;
+      padding: 15px 20px 15px 50px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 50px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    .search-container input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 5px 20px rgba(52, 152, 219, 0.2);
+    }
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 18px;
+    }
+    
+    /* Content Sections */
+    .tag-section { margin-bottom: 50px; transition: opacity 0.3s; }
+    .tag-title { font-size: 1.6em; color: var(--primary-color); border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 25px; font-weight: 600; display: flex; align-items: center; }
+    .tag-title i { margin-right: 10px; color: var(--accent-color); }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+    
+    /* Card Styles */
+    .card { 
+      background: var(--card-bg); 
+      border-radius: 12px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+      overflow: hidden; 
+      transition: transform 0.3s, box-shadow 0.3s; 
+      position: relative; 
+      border: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover { transform: translateY(-7px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+    
+    .card-img-container { 
+      width: 100%; 
+      height: 150px; 
+      background: #eee; 
+      position: relative;
+      overflow: hidden;
+    }
+    .card img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+      transition: transform 0.5s ease;
+    }
+    .card:hover img { transform: scale(1.05); }
+
+    .card-content { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; }
+    .card-title { font-weight: bold; font-size: 1.2em; margin-bottom: 8px; color: #2c3e50; display: block; text-decoration: none; transition: color 0.2s;}
+    .card-title:hover { color: var(--accent-color); }
+    
+    .card-tags { font-size: 0.85em; color: #666; margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; padding-top: 10px;}
+    .tag-badge { background: #eff3f6; color: #555; padding: 4px 8px; border-radius: 6px; border: 1px solid #e1e4e8; }
+    
+    /* Edit Controls */
+    .edit-controls { display: none; position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    body.is-admin .edit-controls { display: block; }
+    
+    .btn-icon { background: transparent; color: #555; border: none; padding: 6px; cursor: pointer; border-radius: 4px; transition: 0.2s; font-size: 14px;}
+    .btn-icon:hover { background: var(--accent-color); color: #fff; }
+    .btn-icon.delete:hover { background: #e74c3c; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); }
+    .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9em; color: #555; }
+    .form-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .form-group input:focus { border-color: var(--accent-color); outline: none; }
+    
+    .modal-actions { text-align: right; margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px; }
+    button { padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 14px; font-weight: 500; transition: 0.2s; border: none; }
+    .btn-primary { background: var(--accent-color); color: #fff; }
+    .btn-primary:hover { background: #2980b9; }
+    .btn-cancel { background: #ecf0f1; color: #555; }
+    .btn-cancel:hover { background: #bdc3c7; }
+    
+    #loading { text-align: center; padding: 80px; font-size: 1.2em; color: #888; }
+    
+    /* FAB */
+    .fab { display: none; position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; background: var(--accent-color); color: #fff; border-radius: 50%; text-align: center; line-height: 56px; font-size: 24px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); cursor: pointer; transition: transform 0.2s; z-index: 1500; }
+    .fab:hover { transform: scale(1.1); }
+    body.is-admin .fab { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="https://images.unsplash.com/photo-1690278504680-83e2c72704b1?q=80&w=1915&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Logo">
+      <span>閒雲遊子意</span>
+    </div>
+    <div class="admin-btn" id="adminBtn" onclick="handleAdminClick()">
+      <i class="fas fa-user-cog"></i> <span>管理員登入</span>
+    </div>
+  </header>
+
+  <nav>
+    <ul class="menu" id="menu-container">
+      </ul>
+  </nav>
+
+  <div id="loading"><i class="fas fa-spinner fa-spin"></i> 載入資料中...</div>
+
+  <div class="container">
+    <div class="search-container">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="searchInput" placeholder="搜尋 AI 工具名稱、標籤..." onkeyup="filterCards()">
+    </div>
+
+    <div id="main-content">
+    </div>
+  </div>
+
+  <div class="fab" onclick="openItemModal(-1)"><i class="fas fa-plus"></i></div>
+
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <h3><i class="fas fa-lock"></i> 管理員登入</h3>
+      <div class="form-group">
+        <label>請輸入管理密碼</label>
+        <input type="password" id="adminPasswordInput" placeholder="輸入密碼...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeLoginModal()">取消</button>
+        <button class="btn-primary" onclick="performLogin()">確認</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="itemModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <h3 id="modalTitle">新增連結</h3>
+      <div class="form-group"><label>網站名稱</label><input type="text" id="inpName"></div>
+      <div class="form-group"><label>網址連結</label><input type="text" id="inpUrl"></div>
+      <div class="form-group"><label>精美圖片連結 (推薦 AI 生成圖)</label><input type="text" id="inpImg" placeholder="請貼上圖片網址..."></div>
+      <div class="form-group"><label>標籤1 (主分類 - Menu)</label><input type="text" id="inpTag1"></div>
+      <div class="form-group"><label>標籤2 (子分類)</label><input type="text" id="inpTag2"></div>
+      <div class="form-group"><label>標籤3</label><input type="text" id="inpTag3"></div>
+      <div class="form-group"><label>標籤4</label><input type="text" id="inpTag4"></div>
+      <input type="hidden" id="inpIndex">
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeItemModal()">取消</button>
+        <button class="btn-primary" onclick="saveData()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+    // ★★★ 請務必填入您 Google Apps Script 部署後的網址 (結尾是 /exec) ★★★
+    const API_URL = "https://script.google.com/macros/s/AKfycbx-QsNLwCWN8zWsrMTpyzrygv-KSoMRii_1of0cs87SuYwdP6CWMzBgTmy1setSRowHNw/exec"; 
+    
+    let rawData = [];
+    let isAdmin = false;
+    let password = "";
+    
+    let idleTimer;
+    const IDLE_LIMIT = 20 * 60 * 1000; 
+
+    window.onload = function() {
+      if(!API_URL || API_URL.includes("您的")) {
+        alert("請確認 GAS 網址是否正確設定！");
+        return;
+      }
+      
+      const savedPass = sessionStorage.getItem('admin_password');
+      if (savedPass) {
+        password = savedPass;
+        enableAdminMode();
+      }
+
+      fetchData();
+    };
+
+    // --- 搜尋功能 (文字搜尋) ---
+    function filterCards() {
+      // 搜尋時，先重置所有分類過濾
+      document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+      
+      const input = document.getElementById('searchInput');
+      const filter = input.value.toLowerCase();
+      updateVisibility(filter, null); // null 代表不限制分類
+    }
+
+    // --- 分類過濾功能 (Menu 點擊) ---
+    function filterByMainTag(tag, element) {
+      // 1. 清空搜尋框
+      document.getElementById('searchInput').value = '';
+      
+      // 2. 設定選單按鈕樣式
+      document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+      if(element) element.classList.add('active');
+
+      // 3. 執行過濾
+      updateVisibility('', tag);
+    }
+
+    function resetFilter(element) {
+      document.getElementById('searchInput').value = '';
+      document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+      if(element) element.classList.add('active');
+      
+      updateVisibility('', null); // 顯示全部
+    }
+
+    // 統一的過濾邏輯 (搜尋文字 + 主分類標籤)
+    function updateVisibility(searchText, tagCategory) {
+      const sections = document.getElementsByClassName('tag-section');
+
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        const cards = section.getElementsByClassName('card');
+        let hasVisibleCard = false;
+
+        for (let j = 0; j < cards.length; j++) {
+          const card = cards[j];
+          const title = card.querySelector('.card-title').textContent || "";
+          const tags = card.querySelector('.card-tags').textContent || "";
+          const cardTag1 = card.dataset.tag1 || ""; // 取得卡片的 Tag1
+
+          // 判斷條件：
+          // 1. 搜尋文字符合 (若無搜尋文字則為 true)
+          const matchSearch = title.toLowerCase().indexOf(searchText) > -1 || tags.toLowerCase().indexOf(searchText) > -1;
+          
+          // 2. 主分類符合 (若 tagCategory 為 null 則為 true，否則必須相等)
+          const matchCategory = (tagCategory === null) || (cardTag1 === tagCategory);
+
+          if (matchSearch && matchCategory) {
+            card.style.display = ""; 
+            hasVisibleCard = true;
+          } else {
+            card.style.display = "none";
+          }
+        }
+
+        // 隱藏空區塊
+        section.style.display = hasVisibleCard ? "" : "none";
+      }
+    }
+
+
+    // --- 管理與登入相關 ---
+    function handleAdminClick() {
+      if (isAdmin) {
+        logout(); 
+      } else {
+        openLoginModal();
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').style.display = 'flex';
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('adminPasswordInput').focus();
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+    }
+
+    function performLogin() {
+      const inputPass = document.getElementById('adminPasswordInput').value;
+      if (inputPass) {
+        password = inputPass;
+        sessionStorage.setItem('admin_password', password);
+        enableAdminMode();
+        closeLoginModal();
+        alert("登入成功！");
+      }
+    }
+
+    function enableAdminMode() {
+      isAdmin = true;
+      document.body.classList.add('is-admin');
+      const btn = document.getElementById('adminBtn');
+      btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>登出管理</span>';
+      startIdleTimer();
+    }
+
+    function logout() {
+      isAdmin = false;
+      password = "";
+      document.body.classList.remove('is-admin');
+      sessionStorage.removeItem('admin_password');
+      const btn = document.getElementById('adminBtn');
+      btn.innerHTML = '<i class="fas fa-user-cog"></i> <span>管理員登入</span>';
+      stopIdleTimer();
+      alert("已登出管理模式");
+    }
+
+    function startIdleTimer() {
+      document.addEventListener('mousemove', resetIdleTimer);
+      document.addEventListener('keypress', resetIdleTimer);
+      document.addEventListener('click', resetIdleTimer);
+      resetIdleTimer();
+    }
+
+    function stopIdleTimer() {
+      if(idleTimer) clearTimeout(idleTimer);
+      document.removeEventListener('mousemove', resetIdleTimer);
+      document.removeEventListener('keypress', resetIdleTimer);
+      document.removeEventListener('click', resetIdleTimer);
+    }
+
+    function resetIdleTimer() {
+      if(idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if(isAdmin) {
+          logout();
+          alert("您已閒置超過 20 分鐘，系統自動登出。");
+        }
+      }, IDLE_LIMIT);
+    }
+
+    function fetchData() {
+      fetch(API_URL + "?action=read")
+        .then(response => response.json())
+        .then(json => {
+          if(json.status === 'success') {
+            rawData = json.data;
+            document.getElementById('loading').style.display = 'none';
+            renderMenu();
+            renderMainContent();
+          } else {
+            document.getElementById('loading').innerHTML = '讀取失敗: ' + json.message;
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('loading').innerHTML = '連線錯誤<br>' + err;
+        });
+    }
+
+    // ★ 修改處：選單只顯示「標籤1」，移除子選單，加入點擊過濾功能
+    function renderMenu() {
+      const menuContainer = document.getElementById('menu-container');
+      menuContainer.innerHTML = '';
+      
+      // 加入「全部顯示」按鈕
+      const liAll = document.createElement('li');
+      liAll.innerHTML = `<a href="#" onclick="resetFilter(this)" class="active">全部工具</a>`;
+      menuContainer.appendChild(liAll);
+
+      const categories = [...new Set(rawData.map(row => row[3]).filter(t => t))];
+      
+      categories.forEach(cat => {
+        const li = document.createElement('li');
+        // 點擊後呼叫 filterByMainTag
+        li.innerHTML = `<a href="#" onclick="filterByMainTag('${cat}', this)">${cat}</a>`;
+        menuContainer.appendChild(li);
+      });
+    }
+
+    function renderMainContent() {
+      const mainContent = document.getElementById('main-content');
+      mainContent.innerHTML = '';
+      
+      let allTags = new Set();
+      rawData.forEach(row => {
+        if(row[4]) allTags.add(row[4]);
+        if(row[5]) allTags.add(row[5]);
+        if(row[6]) allTags.add(row[6]);
+      });
+
+      if(allTags.size === 0) {
+        mainContent.innerHTML = '<div style="text-align:center; color:#888;">目前沒有子標籤資料，請登入新增。</div>';
+      }
+
+      allTags.forEach(tag => {
+        const section = document.createElement('div');
+        section.className = 'tag-section';
+        section.innerHTML = `<div class="tag-title"><i class="fas fa-star"></i> ${tag}</div>`; 
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        
+        rawData.forEach((row, index) => {
+          const rowTags = [row[4], row[5], row[6]];
+          if (rowTags.includes(tag)) {
+            const card = createCard(row, index);
+            grid.appendChild(card);
+          }
+        });
+        section.appendChild(grid);
+        mainContent.appendChild(section);
+      });
+    }
+
+    function createCard(row, index) {
+      const defaultIcon = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1064&auto=format&fit=crop"; 
+      const iconUrl = row[2] ? row[2] : defaultIcon;
+      const div = document.createElement('div');
+      div.className = 'card';
+      
+      // ★ 關鍵：將 Tag1 資訊綁定在 DOM 元素上，方便過濾
+      div.dataset.tag1 = row[3]; 
+
+      let tagHtml = '';
+      if(row[4]) tagHtml += `<span class="tag-badge">${row[4]}</span>`;
+      if(row[5]) tagHtml += `<span class="tag-badge">${row[5]}</span>`;
+      if(row[6]) tagHtml += `<span class="tag-badge">${row[6]}</span>`;
+
+      div.innerHTML = `
+        <div class="edit-controls">
+          <button class="btn-icon" onclick="openItemModal(${index})"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon delete" onclick="deleteData(${index})"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="card-img-container">
+          <img src="${iconUrl}" alt="${row[0]}" onerror="this.src='${defaultIcon}'">
+        </div>
+        <div class="card-content">
+          <a href="${row[1]}" target="_blank" class="card-title">${row[0]}</a>
+          <div class="card-tags">
+            ${tagHtml}
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    function openItemModal(index) {
+      const modal = document.getElementById('itemModal');
+      document.getElementById('inpIndex').value = index;
+      if (index === -1) {
+        document.getElementById('modalTitle').textContent = "新增連結";
+        ['inpName','inpUrl','inpImg','inpTag1','inpTag2','inpTag3','inpTag4'].forEach(id => document.getElementById(id).value = '');
+      } else {
+        document.getElementById('modalTitle').textContent = "修改連結";
+        const row = rawData[index];
+        document.getElementById('inpName').value = row[0];
+        document.getElementById('inpUrl').value = row[1];
+        document.getElementById('inpImg').value = row[2];
+        document.getElementById('inpTag1').value = row[3];
+        document.getElementById('inpTag2').value = row[4];
+        document.getElementById('inpTag3').value = row[5];
+        document.getElementById('inpTag4').value = row[6];
+      }
+      modal.style.display = "flex";
+    }
+
+    function closeItemModal() {
+      document.getElementById('itemModal').style.display = "none";
+    }
+
+    function saveData() {
+      const index = parseInt(document.getElementById('inpIndex').value);
+      const rowData = [
+        document.getElementById('inpName').value,
+        document.getElementById('inpUrl').value,
+        document.getElementById('inpImg').value,
+        document.getElementById('inpTag1').value,
+        document.getElementById('inpTag2').value,
+        document.getElementById('inpTag3').value,
+        document.getElementById('inpTag4').value
+      ];
+      
+      if(!rowData[0] || !rowData[1]) {
+        alert("名稱與網址為必填！");
+        return;
+      }
+
+      const btn = document.querySelector('#itemModal .btn-primary');
+      const originalText = btn.textContent;
+      btn.textContent = "儲存中...";
+      btn.disabled = true;
+
+      const payload = {
+        password: password,
+        index: index,
+        data: rowData
+      };
+
+      fetch(API_URL + "?action=save", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(json => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        if(json.status === 'success') {
+          alert(json.message);
+          closeItemModal();
+          fetchData(); 
+        } else {
+          alert("錯誤: " + json.message);
+        }
+      })
+      .catch(err => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+        alert("連線錯誤: " + err);
+      });
+    }
+
+    function deleteData(index) {
+      if(!confirm("確定要刪除這個網站嗎？")) return;
+      const payload = { password: password, index: index };
+      fetch(API_URL + "?action=delete", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(json => {
+        if(json.status === 'success') {
+          alert(json.message);
+          fetchData();
+        } else {
+          alert("錯誤: " + json.message);
+        }
+      });
+    }
+</script>
+</body>
+</html>

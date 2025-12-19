@@ -2,30 +2,1021 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>小閒工作室</title>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        /* --- 配色方案 (莫蘭迪色系) --- */
+        :root {
+            --color-deep-khaki: #3E442B;   
+            --color-ebony: #6A7062;        
+            --color-lavender: #8D909B;     
+            --color-light-lavender: #AAADC4; 
+            --color-pale-sky: #D6EEFF;     
+
+            --bg-color: var(--color-pale-sky); 
+            --sidebar-bg: var(--color-light-lavender); 
+            --sidebar-text: var(--color-deep-khaki);
+            
+            --card-bg: #ffffff;
+            --text-main: var(--color-deep-khaki);
+            --text-sec: var(--color-ebony);
+            
+            --radius: 12px;
+            --shadow-sm: 0 2px 4px rgba(62, 68, 43, 0.05);
+            --shadow-md: 0 6px 16px rgba(62, 68, 43, 0.1);
+            
+            --sidebar-width: 280px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px;
+        }
+
+        /* --- Layout --- */
+        .app-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            padding: 2rem 1.5rem;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--sidebar-text);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        /* 標籤雲 */
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-tag {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.4);
+            color: var(--sidebar-text);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-tag:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-tag.active {
+            background: var(--color-deep-khaki);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(62, 68, 43, 0.3);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            width: 100%;
+        }
+
+        .search-bar-wrapper {
+            margin-bottom: 2rem;
+            position: relative;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            padding-left: 50px;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            background: white;
+            box-shadow: var(--shadow-sm);
+            font-size: 1rem;
+            transition: 0.3s;
+            color: var(--text-main);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-lavender);
+            box-shadow: 0 0 0 4px rgba(141, 144, 155, 0.2);
+        }
+
+        .search-input::placeholder { color: var(--color-lavender); }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-lavender);
+        }
+
+        /* --- Pinned Section --- */
+        .pinned-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 10px 15px;      /* 縮小內距 */
+            margin-bottom: 20px;     /* 縮小下邊界 */
+            box-shadow: var(--shadow-sm);
+            border-left: 6px solid var(--color-lavender);
+            background: linear-gradient(to right, #fff, #f9f9fc);
+        }
+
+        .pinned-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .pinned-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .pinned-item:hover {
+            border-color: var(--color-lavender);
+            color: var(--color-deep-khaki);
+            background: var(--color-pale-sky);
+            transform: translateX(5px);
+        }
+
+        .pinned-item::before {
+            content: '🌌';
+            margin-right: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* --- Portfolio Grid --- */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px; /* 縮小卡片間距 */
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-img-link {
+            display: block;
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            background: #eee;
+            position: relative;
+        }
+
+        .card-img-link::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #f0f0f0;
+            z-index: 0;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card:hover .card-img { transform: scale(1.08); }
+
+        .card-content {
+            padding: 10px 12px; /* 縮小卡片內距 */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+
+        .mini-tag {
+            font-size: 0.7rem;
+            color: #fff;
+            background: var(--color-ebony);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title-link {
+            color: var(--text-main);
+            text-decoration: none;
+            transition: color 0.2s;
+            margin-right: 5px;
+        }
+        
+        .card-title-link:hover { color: var(--color-lavender); }
+
+        /* --- 彈窗 (Modal) 與圖示樣式 --- */
+        /* 1. 隱藏原本卡片上的描述文字 */
+        .card-desc { display: none; }
+
+        /* 2. 文件圖示 🏷️ */
+        .desc-icon {
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+            opacity: 0.7;
+        }
+        .desc-icon:hover {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        /* 3. 彈窗背景 */
+        .modal {
+            display: none;
+            position: fixed; 
+            z-index: 9999; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10vh auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 600px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            line-height: 1.8;
+            color: var(--text-main);
+        }
+
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-color);
+            color: var(--color-deep-khaki);
+            padding-right: 30px;
+        }
+
+        .close-modal {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .close-modal:hover { color: #d33; }
+
+        .pinned-link {
+            text-decoration: none;
+            color: inherit;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .pinned-link:hover { color: var(--color-deep-khaki); }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        /* --- Admin Controls --- */
+        .admin-overlay {
+            display: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        body.is-admin .admin-overlay { display: flex; }
+
+        .icon-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        
+        .icon-btn:hover { transform: scale(1.1); }
+        .edit-btn { color: var(--color-deep-khaki); }
+        .del-btn { color: #d33; }
+
+        /* 主按鈕 (新增/登入) */
+        .fab {
+            position: fixed;
+            bottom: 90px; 
+            right: 25px;
+            width: 56px;
+            height: 56px;
+            background: var(--color-deep-khaki);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(62, 68, 43, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .fab.admin-active {
+            background: #5aa760; /* 綠色 */
+            transform: rotate(0deg);
+        }
+        .fab.admin-active:hover { background: #4a8e50; transform: scale(1.05); }
+
+        /* 登出按鈕 (紅色 X) */
+        .fab-logout {
+            position: fixed;
+            bottom: 160px; /* 位置在主按鈕上方 */
+            right: 25px;   /* 靠右距離對齊主按鈕 */
+            width: 56px;   /* 大小與主按鈕一致 */
+            height: 56px;
+            background: #d33;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 999;
+            
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .fab-logout.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .fab-logout:hover { background: #b00; transform: scale(1.1); }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 768px) {
+            .app-wrapper { flex-direction: column; }
+
+            .sidebar {
+                position: fixed;
+                bottom: 0; top: auto; left: 0;
+                width: 100%; height: 60px;
+                padding: 8px 15px;
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+                background: white;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+                z-index: 2000;
+                border-right: none;
+                border-top: 1px solid #eee;
+                overflow-x: auto; overflow-y: hidden;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .app-title { display: none; }
+            .sidebar .tag-cloud { flex-wrap: nowrap; width: 100%; }
+
+            .nav-tag {
+                flex-shrink: 0; padding: 6px 14px;
+                font-size: 0.9rem;
+                border: 1px solid #eee;
+                background: #f8f9fa;
+                color: var(--text-main);
+            }
+            
+            .nav-tag.active {
+                background: var(--color-deep-khaki);
+                color: white;
+            }
+
+            .main-content { padding: 1.5rem 1.5rem 5rem 1.5rem; }
+            .search-input { font-size: 16px; }
+            .fab { bottom: 80px; right: 20px; }
+            .fab-logout { bottom: 150px; right: 20px; }
+            
+            .mobile-header {
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .mobile-header h1 {
+                margin: 0;
+                color: var(--color-deep-khaki);
+                font-size: 1.5rem;
+                font-weight: 800;
+            }
+        }
+        
+        @media (min-width: 769px) { .mobile-header { display: none; } }
+
+        /* --- Loading & Error State --- */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--color-deep-khaki);
+            border-radius: 50%;
+            width: 45px; height: 45px;
+            animation: spin 1s linear infinite;
+            margin: 60px auto;
+        }
+        
+        .loader.error {
+            border: none;
+            animation: none;
+            width: auto; height: auto;
+            color: #d33;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
 </head>
 <body>
 
-    <header class="app-header">
-        <h1 class="header-title">小閒工作室</h1>
-        
-        <div class="filter-controls">
-            <input type="search" id="search-bar" placeholder="🔍 搜尋作品名稱...">
-        </div>
-        
-    </header>
+    <div class="app-wrapper">
+        <nav class="sidebar" id="sidebar-nav">
+            <div class="app-title" onclick="location.reload()">小閒工作室</div>
+            <div>
+                <div class="tag-cloud" id="tag-cloud-container"></div>
+            </div>
+        </nav>
 
-    <div id="tag-cloud-container" class="tag-cloud-container">
-        </div>
-    
-    <div id="mobile-filter-bar" class="mobile-filter-bar">
-        <select id="category-dropdown" aria-label="分類篩選"></select>
+        <main class="main-content">
+            <div class="mobile-header">
+                <h1 onclick="location.reload()">小閒工作室</h1>
+            </div>
+
+            <div class="search-bar-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="search-input" placeholder="輸入關鍵字搜尋作品...">
+            </div>
+
+            <div id="pinned-container" class="pinned-section" style="display: none;">
+                <div class="pinned-grid" id="pinned-grid"></div>
+            </div>
+
+            <div id="loading" class="loader"></div>
+
+            <div id="grid" class="portfolio-grid"></div>
+        </main>
     </div>
 
-    <main id="portfolio-grid" class="portfolio-grid"></main>
+    <div id="desc-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-title" class="modal-header"></div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
 
-    <script src="script.js"></script>
+    <div id="logout-fab" class="fab-logout" title="登出管理模式">✕</div>
+    <div id="admin-fab" class="fab" title="管理員登入">⚙️</div>
+
+
+    <script>
+        // =========================================================================
+        // 🔴 請務必將下方的網址替換為您的 Google Apps Script 網頁應用程式網址
+        // =========================================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbyjABkbVoHep96Zi777VjUxqFItnLVY1g2eYbJ7rgFIkBpWOAmnCkGGkZzO8nCubo7GvQ/exec"; 
+        // =========================================================================
+        
+        const DEFAULT_IMG = "images/image001.jpg"; 
+        const FEATURED_KEYWORD = "精選內容"; 
+        
+        let allData = [];
+        let currentFilter = 'all'; 
+        let isAdmin = false;
+        let adminPassword = "";
+        let logoutTimer;
+        const TIMEOUT_DURATION = 20 * 60 * 1000;
+
+        window.onload = function() {
+            if (API_URL.includes("...")) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '設定錯誤',
+                    text: '請打開 index.html 程式碼，將 API_URL 換成您自己的 GAS 網址！',
+                    allowOutsideClick: false
+                });
+                const loader = document.getElementById('loading');
+                loader.classList.add('error');
+                loader.innerHTML = '請修正程式碼中的 API_URL 網址';
+                return;
+            }
+            fetchData();
+        };
+
+        // 閒置偵測
+        document.addEventListener('mousemove', resetLogoutTimer);
+        document.addEventListener('keydown', resetLogoutTimer);
+        document.addEventListener('click', resetLogoutTimer);
+        document.addEventListener('touchstart', resetLogoutTimer);
+
+        function resetLogoutTimer() {
+            if (isAdmin) {
+                clearTimeout(logoutTimer);
+                logoutTimer = setTimeout(performLogout, TIMEOUT_DURATION);
+            }
+        }
+
+        function performLogout() {
+            if (isAdmin) {
+                isAdmin = false;
+                adminPassword = "";
+                document.body.classList.remove('is-admin');
+                const fab = document.getElementById('admin-fab');
+                fab.textContent = '⚙️';
+                fab.classList.remove('admin-active');
+                
+                const logoutFab = document.getElementById('logout-fab');
+                if(logoutFab) logoutFab.classList.remove('show');
+
+                Swal.fire({
+                    icon: 'info',
+                    title: '閒置過久',
+                    text: '系統已自動登出管理模式。',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error("網路連線異常");
+                const data = await response.json();
+                processData(data);
+            } catch (error) {
+                console.error("載入失敗:", error);
+                const loader = document.getElementById('loading');
+                loader.classList.add('error');
+                loader.innerHTML = `無法載入資料，請檢查網址或權限。<br><small>${error.message}</small>`;
+            }
+        }
+
+        function processData(data) {
+            allData = data;
+            const loader = document.getElementById('loading');
+            loader.style.display = 'none';
+
+            renderSidebar(data);
+            filterAndRender();
+        }
+
+        // 渲染側邊欄 (自動過濾掉「精選內容」標籤)
+        function renderSidebar(data) {
+            const tagContainer = document.getElementById('tag-cloud-container');
+            const splitRegex = /[|,\uff0c\u3001]/;
+            
+            const allTags = [...new Set(
+                data.flatMap(item => String(item.category).split(splitRegex).map(tag => tag.trim()))
+            )].filter(tag => tag !== "" && tag !== FEATURED_KEYWORD).sort();
+
+            let html = `<div class="nav-tag active" onclick="setFilter('all', this)">全部</div>`;
+            allTags.forEach(tag => {
+                html += `<div class="nav-tag" onclick="setFilter('${tag}', this)">${tag}</div>`;
+            });
+            tagContainer.innerHTML = html;
+        }
+
+        function setFilter(tag, element) {
+            currentFilter = tag;
+            document.querySelectorAll('.nav-tag').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            if(window.innerWidth <= 768 && element) {
+                element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+            filterAndRender();
+        }
+
+        // 核心渲染邏輯 (實作精選區塊分類)
+        function filterAndRender() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const splitRegex = /[|,\uff0c\u3001]/;
+
+            // 1. 初步篩選 (搜尋 + 分類)
+            const filtered = allData.filter(item => {
+                const matchSearch = String(item.title).toLowerCase().includes(search) || 
+                                    String(item.description).toLowerCase().includes(search);
+                
+                const itemTags = String(item.category).split(splitRegex).map(t => t.trim());
+                const matchCat = currentFilter === 'all' || itemTags.includes(currentFilter);
+                
+                return matchSearch && matchCat;
+            });
+
+            // 2. 分離「精選內容」與「一般作品」
+            const pinnedItems = filtered.filter(d => {
+                const tags = String(d.category).split(splitRegex).map(t => t.trim());
+                return tags.includes(FEATURED_KEYWORD);
+            });
+
+            const normalItems = filtered.filter(d => {
+                const tags = String(d.category).split(splitRegex).map(t => t.trim());
+                return !tags.includes(FEATURED_KEYWORD);
+            });
+
+            renderPinned(pinnedItems);
+            renderGrid(normalItems);
+        }
+
+        function renderPinned(items) {
+            const container = document.getElementById('pinned-container');
+            const grid = document.getElementById('pinned-grid');
+            
+            if (items.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            grid.innerHTML = items.map(item => `
+                <div class="pinned-item">
+                    <a href="${item.link}" target="_blank" class="pinned-link">${item.title}</a>
+                    
+                    <span class="desc-icon" onclick="showDesc(event, '${item.id}')" title="查看描述">🏷️</span>
+
+                    ${isAdmin ? `
+                        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                            <span onclick="event.preventDefault(); event.stopPropagation(); editItem('${item.id}')" style="cursor:pointer; color:var(--color-deep-khaki); font-size:0.9rem;" title="編輯">✏️</span>
+                            <span onclick="event.preventDefault(); event.stopPropagation(); deleteItem('${item.id}')" style="cursor:pointer; color:#d33; font-size:0.9rem;" title="刪除">🗑️</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderGrid(items) {
+            const grid = document.getElementById('grid');
+            const splitRegex = /[|,\uff0c\u3001]/;
+            grid.innerHTML = '';
+
+            if (items.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--color-lavender);">沒有相關內容。</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const tagsHtml = String(item.category).split(splitRegex)
+                    .map(tag => tag.trim())
+                    .filter(tag => tag !== "")
+                    .map(tag => `<span class="mini-tag">${tag}</span>`)
+                    .join('');
+
+                const imgSrc = (item.image && item.image.trim() !== "") ? item.image : DEFAULT_IMG;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <a href="${item.link}" target="_blank" class="card-img-link">
+                        <img src="${imgSrc}" 
+                             alt="${item.title}" 
+                             class="card-img" 
+                             onerror="this.onerror=null; this.src='${DEFAULT_IMG}'">
+                    </a>
+                    <div class="card-content">
+                        <div class="card-tags">${tagsHtml}</div>
+                        
+                        <h3 class="card-title">
+                            <a href="${item.link}" target="_blank" class="card-title-link">${item.title}</a>
+                            <span class="desc-icon" onclick="showDesc(event, '${item.id}')" title="查看描述">🏷️</span>
+                        </h3>
+                        
+                    </div>
+                    <div class="admin-overlay">
+                        <button class="icon-btn edit-btn" onclick="editItem('${item.id}')">✏️</button>
+                        <button class="icon-btn del-btn" onclick="deleteItem('${item.id}')">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('search-input').addEventListener('input', filterAndRender);
+
+        async function sendToAPI(action, payload = {}, id = null) {
+            const body = JSON.stringify({
+                action: action,
+                password: adminPassword,
+                data: payload,
+                id: id
+            });
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: body,
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            
+            const result = await response.json();
+            if (result.status === 'error') throw new Error(result.message);
+            return result.message;
+        }
+
+        // --- 管理按鈕與登出邏輯 ---
+        const fab = document.getElementById('admin-fab');
+        const logoutFab = document.getElementById('logout-fab'); 
+
+        fab.addEventListener('click', async () => {
+            if (!isAdmin) {
+                // 1. 輸入密碼
+                const { value: password } = await Swal.fire({
+                    title: '管理員登入',
+                    input: 'password',
+                    inputPlaceholder: '請輸入密碼',
+                    inputAttributes: {
+                        autocapitalize: 'off',
+                        autocorrect: 'off',
+                        spellcheck: 'false',
+                        name: 'password'
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: '登入',
+                    confirmButtonColor: 'var(--color-deep-khaki)'
+                });
+
+                if (password) {
+                    // 2. 顯示驗證中
+                    Swal.fire({
+                        title: '驗證中...',
+                        text: '正在與伺服器確認身分',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    try {
+                        // 3. 送出請求驗證
+                        adminPassword = password;
+                        await sendToAPI('verify');
+
+                        // 4. 驗證成功：切換 UI
+                        isAdmin = true;
+                        document.body.classList.add('is-admin');
+                        
+                        fab.textContent = '+'; 
+                        fab.classList.add('admin-active');
+                        if(logoutFab) logoutFab.classList.add('show');
+
+                        resetLogoutTimer();
+                        filterAndRender(); 
+                        
+                        Swal.fire({ 
+                            icon: 'success', 
+                            title: '登入成功', 
+                            toast: true, 
+                            position: 'top-end', 
+                            showConfirmButton: false, 
+                            timer: 2000 
+                        });
+
+                    } catch (err) {
+                        // 5. 驗證失敗
+                        adminPassword = ""; 
+                        Swal.fire({
+                            icon: 'error',
+                            title: '登入失敗',
+                            text: '密碼錯誤，請重新輸入！'
+                        });
+                    }
+                }
+            } else {
+                // 已經登入：執行「新增」
+                showForm();
+            }
+        });
+
+        // 登出按鈕點擊
+        if(logoutFab) {
+            logoutFab.addEventListener('click', () => {
+                Swal.fire({
+                    title: '確定登出?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: '登出',
+                    cancelButtonText: '取消'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performLogout();
+                    }
+                });
+            });
+        }
+
+        async function showForm(item = null) {
+            resetLogoutTimer();
+            const isEdit = !!item;
+            const { value: formValues } = await Swal.fire({
+                title: isEdit ? '編輯作品' : '新增作品',
+                html:
+                    `<input id="swal-title" class="swal2-input" placeholder="作品名稱" value="${item ? item.title : ''}">` +
+                    `<input id="swal-cat" class="swal2-input" placeholder="分類 (多標籤用 | 隔開，精選請加 '精選內容')" value="${item ? item.category : ''}">` +
+                    `<input id="swal-desc" class="swal2-input" placeholder="作品描述" value="${item ? item.description : ''}">` +
+                    `<input id="swal-img" class="swal2-input" placeholder="圖片連結 URL (留空則使用預設圖)" value="${item ? item.image : ''}">` +
+                    `<input id="swal-link" class="swal2-input" placeholder="作品連結 URL" value="${item ? item.link : ''}">`,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--color-deep-khaki)',
+                preConfirm: () => {
+                    return {
+                        id: item ? item.id : null,
+                        title: document.getElementById('swal-title').value,
+                        category: document.getElementById('swal-cat').value,
+                        description: document.getElementById('swal-desc').value,
+                        image: document.getElementById('swal-img').value,
+                        link: document.getElementById('swal-link').value
+                    }
+                }
+            });
+
+            if (formValues) {
+                Swal.fire({ title: '處理中...', didOpen: () => Swal.showLoading() });
+                try {
+                    const action = isEdit ? 'update' : 'add';
+                    const msg = await sendToAPI(action, formValues);
+                    Swal.fire('成功', msg, 'success');
+                    fetchData(); 
+                    resetLogoutTimer();
+                } catch (err) {
+                    Swal.fire('錯誤', err.message, 'error');
+                }
+            }
+        }
+
+        function editItem(id) {
+            resetLogoutTimer();
+            const item = allData.find(d => String(d.id) === String(id));
+            if (item) showForm(item);
+        }
+
+        function deleteItem(id) {
+            resetLogoutTimer();
+            Swal.fire({
+                title: '確定刪除?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '刪除'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: '刪除中...', didOpen: () => Swal.showLoading() });
+                    try {
+                        const msg = await sendToAPI('delete', {}, id);
+                        Swal.fire('成功', msg, 'success');
+                        fetchData();
+                        resetLogoutTimer();
+                    } catch (err) {
+                        Swal.fire('錯誤', err.message, 'error');
+                    }
+                }
+            });
+        }
+        
+        // --- 彈窗控制邏輯 ---
+        const modal = document.getElementById("desc-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalBody = document.getElementById("modal-body");
+        const closeBtn = document.getElementsByClassName("close-modal")[0];
+
+        function showDesc(e, id) {
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            
+            const item = allData.find(d => String(d.id) === String(id));
+            if (!item) return;
+
+            modalTitle.innerText = item.title;
+            modalBody.innerText = item.description ? item.description : "此作品暫無詳細描述。";
+            
+            modal.style.display = "block";
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
