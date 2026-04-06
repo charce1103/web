@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xian 作文批閱小老師</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f7f8fc;
+        }
+        .drag-area {
+            border: 2px dashed #cbd5e1;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        .drag-area.active {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .star-rating {
+            display: flex;
+            align-items: center;
+        }
+        .star {
+            color: #d1d5db; /* gray-400 */
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+        .star.filled {
+            color: #f59e0b; /* amber-500 */
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader {
+            animation: spin 1s linear infinite;
+        }
+        .history-item {
+            transition: background-color 0.2s;
+        }
+        .history-item:hover {
+            background-color: #f3f4f6;
+        }
+        .prose p {
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+        .prose ol {
+            padding-left: 1.5em;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Xian 作文批閱小老師 📝</h1>
+            <p class="text-gray-500 mt-2">修改自<a href="https://gemini.google.com/share/67ed96b9986c" target="_blank" class="text-indigo-500 hover:underline">Puti-AI 作文批閱小老師</a>，上傳作文，AI 幫您快速批閱，給予溫暖鼓勵！</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Panel: Input -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">1. 提交作文</h2>
+                
+                <!-- Grade Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">選擇學生年級</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <input id="grade-lower" name="grade-level" type="radio" value="lower" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" checked>
+                            <label for="grade-lower" class="ml-2 block text-sm text-gray-900">低年級</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="grade-middle" name="grade-level" type="radio" value="middle" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <label for="grade-middle" class="ml-2 block text-sm text-gray-900">中年級</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="grade-upper" name="grade-level" type="radio" value="upper" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <label for="grade-upper" class="ml-2 block text-sm text-gray-900">高年級</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="grade-junior" name="grade-level" type="radio" value="junior" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <label for="grade-junior" class="ml-2 block text-sm text-gray-900">國中</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Input -->
+                <div class="mb-4">
+                     <label for="composition-text" class="block text-sm font-medium text-gray-700 mb-1">貼上作文文字</label>
+                    <textarea id="composition-text" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="請在此處貼上作文文字..."></textarea>
+                </div>
+                
+                <!-- Image/PDF Upload -->
+                <div id="drag-area" class="drag-area text-center p-6 rounded-lg cursor-pointer bg-gray-50">
+                    <input type="file" id="file-input" class="hidden" accept="image/*,application/pdf" multiple>
+                    <div class="flex flex-col items-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <p class="mt-2 text-sm text-gray-500">
+                            <span class="font-semibold text-indigo-600">點擊上傳</span> 或拖曳作文圖片或 PDF
+                        </p>
+                        <p id="file-name" class="text-xs text-gray-500 mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-6">
+                    <button id="start-review-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center justify-center">
+                        <span id="btn-text">🚀 開始批閱</span>
+                        <div id="btn-loader" class="hidden loader w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output & History -->
+            <div class="flex flex-col gap-8">
+                <!-- Output -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-bold mb-4 border-b pb-2">2. 批閱結果</h2>
+                    <div id="result-view" class="hidden space-y-4">
+                        <div id="ratings-container"></div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 mb-2">老師評語：</h3>
+                            <div id="feedback-text" contenteditable="true" class="w-full p-3 border border-gray-200 rounded-lg bg-yellow-50 min-h-[100px] focus:ring-2 focus:ring-indigo-500 focus:outline-none"></div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="copy-btn" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition">複製結果</button>
+                            <button id="download-btn" class="flex-1 bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition">下載 (.txt)</button>
+                        </div>
+                    </div>
+                    <div id="placeholder-view" class="text-center text-gray-400 py-12">
+                        <p>批閱結果將會顯示在這裡...</p>
+                    </div>
+                     <div id="error-view" class="hidden text-center text-red-500 py-12">
+                        <p>哎呀，好像出錯了！請檢查網路連線或稍後再試。</p>
+                    </div>
+                </div>
+
+                 <!-- Writing Guidance -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-bold mb-4 border-b pb-2">3. 寫作指導</h2>
+                    <div id="guidance-view" class="hidden space-y-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-700 mb-2">訂正範本：</h3>
+                            <div id="revised-text" class="p-4 border rounded-lg bg-gray-50 prose"></div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-700 mb-2">修改說明：</h3>
+                            <div id="revision-explanation" class="p-4 border rounded-lg bg-blue-50 text-blue-800 prose"></div>
+                        </div>
+                    </div>
+                    <div id="guidance-placeholder" class="text-center text-gray-400 py-8">
+                        <p>修改建議與指導將會顯示在這裡...</p>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-xl font-bold">4. 批閱記錄</h2>
+                        <button id="clear-history-btn" class="text-sm text-red-500 hover:text-red-700 disabled:text-gray-400">全部清除</button>
+                    </div>
+                    <div id="history-list" class="space-y-2 max-h-48 overflow-y-auto">
+                        <p id="no-history-msg" class="text-gray-400 text-sm">目前沒有記錄。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-6 max-w-sm text-center shadow-xl">
+            <h3 class="text-lg font-bold mb-4">確認清除？</h3>
+            <p class="text-gray-600 mb-6">您確定要清除所有批閱記錄嗎？此操作無法復原。</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-clear-btn" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">確定</button>
+                <button id="cancel-clear-btn" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Gemini API configuration
+        const API_KEY = ""; // Leave empty, will be handled by the environment
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        
+        // DOM Elements
+        const compositionTextarea = document.getElementById('composition-text');
+        const dragArea = document.getElementById('drag-area');
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name');
+        const startReviewBtn = document.getElementById('start-review-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoader = document.getElementById('btn-loader');
+
+        const resultView = document.getElementById('result-view');
+        const placeholderView = document.getElementById('placeholder-view');
+        const errorView = document.getElementById('error-view');
+        const ratingsContainer = document.getElementById('ratings-container');
+        const feedbackText = document.getElementById('feedback-text');
+        
+        const copyBtn = document.getElementById('copy-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        
+        const historyList = document.getElementById('history-list');
+        const noHistoryMsg = document.getElementById('no-history-msg');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmClearBtn = document.getElementById('confirm-clear-btn');
+        const cancelClearBtn = document.getElementById('cancel-clear-btn');
+
+        const guidanceView = document.getElementById('guidance-view');
+        const guidancePlaceholder = document.getElementById('guidance-placeholder');
+        const revisedText = document.getElementById('revised-text');
+        const revisionExplanation = document.getElementById('revision-explanation');
+
+        let reviewHistory = [];
+        let currentFileArray = [];
+        let currentReviewData = null;
+
+        // --- File Drag & Drop ---
+        dragArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFiles(e.target.files);
+        });
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dragArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dragArea.addEventListener(eventName, () => dragArea.classList.add('active'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dragArea.addEventListener(eventName, () => dragArea.classList.remove('active'), false);
+        });
+
+        dragArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) handleFiles(files);
+        }, false);
+        
+        function handleFiles(files) {
+            const fileNames = Array.from(files).map(file => file.name).join(', ');
+            fileNameDisplay.textContent = fileNames;
+            
+            const filePromises = Array.from(files).map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64Data = reader.result.split(',')[1];
+                        resolve({
+                            mimeType: file.type,
+                            data: base64Data
+                        });
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            Promise.all(filePromises).then(filesData => {
+                currentFileArray = filesData;
+                compositionTextarea.value = ''; 
+                compositionTextarea.placeholder = `已選擇 ${files.length} 個檔案，將優先辨識檔案內容。`;
+            }).catch(error => {
+                console.error("Error reading files:", error);
+                fileNameDisplay.textContent = "讀取檔案時發生錯誤";
+            });
+        }
+
+        compositionTextarea.addEventListener('input', () => {
+             if (compositionTextarea.value) {
+                currentFileArray = [];
+                fileInput.value = '';
+                fileNameDisplay.textContent = '';
+                compositionTextarea.placeholder = '請在此處貼上作文文字...';
+             }
+        });
+
+        // --- API Call Logic ---
+        async function callGeminiAPI(payload) {
+            // Exponential backoff
+            let response;
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (error) {
+                    console.error("API call failed, retrying...", error);
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("API call failed after multiple retries.");
+        }
+        
+        async function extractTextFromFiles(fileArray) {
+            const parts = [
+                { text: "這是一篇作文的檔案（圖片或PDF），請辨識並提取所有文字，將它們合併成一段通順的文字。如果是圖片，請注意閱讀順序。" }
+            ];
+
+            fileArray.forEach(file => {
+                parts.push({
+                    inlineData: { mimeType: file.mimeType, data: file.data }
+                });
+            });
+
+            const payload = { contents: [{ parts }] };
+            const result = await callGeminiAPI(payload);
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        }
+
+        function createReviewPrompt(composition, grade) {
+            let feedbackPrompt, systemInstruction, gradeName, coreCompetency;
+            
+            const allCriteria = {
+                "標點符號": "評估標點符號與錯別字多寡，以及使用的正確性。",
+                "遣詞造句": "評估用詞是否精確、豐富、多樣。",
+                "語句通順": "評估句子是否能完整表達意思，避免斷裂、語病或不完整句。",
+                "結構組織": "評估文章的架構是否完整（包含開頭、發展、結尾）、段落劃分是否恰當、脈絡是否清晰連貫。",
+                "立意取材": "評估主題是否明確、內容是否切題、材料是否合適。",
+                "題意理解": "是否能準確抓到題目重點，圍繞主題，不偏題。",
+                "綜合表現": "評估文章是否達到該學習階段的核心目標，以及整體的流暢度和用心程度。"
+            };
+
+            if (grade === 'lower') {
+                gradeName = "國小低年級";
+                coreCompetency = "能使用完整的句子、正確使用基本標點符號 (。、，、？)";
+                feedbackPrompt = `請幫學生生成作文評語，語氣要非常溫暖、充滿鼓勵，像對待小一小二的孩子一樣。
+【重要規則】
+- 必須從這篇作文中找出一個「具體的亮點」，直接引用學生寫的詞或句子（用「」標示），說明為什麼這樣寫很棒。不可以只說「寫得很好」等空洞稱讚。
+- 提出一個「這篇文章最需要改進的地方」，要針對這篇文章的實際問題，不可以是適用於所有文章的通用建議。
+- 評語的開頭、結尾的句式每次都要不同，避免千篇一律的固定格式。
+- 評語字數：40～60字。`;
+                systemInstruction = "你是一位非常有愛心和耐心的小學低年級老師，你的評語總是充滿陽光和鼓勵。每位學生的作文都有獨特之處，你會仔細閱讀後給出針對這篇文章的個人化評語，絕不給出套用模板的評語。";
+            } else if (grade === 'middle') {
+                gradeName = "國小中年級";
+                coreCompetency = "能圍繞主題寫出一個「段落」、能使用「時間順序」描述、能正確使用對話引號 (：「」)";
+                feedbackPrompt = `請幫學生生成作文評語，語氣要溫暖、鼓勵，適合小三小四學生理解。
+【重要規則】
+- 必須從這篇作文中找出一個「具體的亮點」，直接引用學生寫的詞或句子（用「」標示），說明為什麼這樣表達有效果或令人喜歡。
+- 提出一個「這篇文章最需要改進的地方」，要有具體指向（例如「第二段提到…這裡可以再多說明一點」），不可以是通用建議。
+- 每篇評語的開頭方式和結尾用語都要因文章內容而異，不可每次都用相同的起手式。
+- 評語字數：50～80字。`;
+                systemInstruction = "你是一位親切、有耐心的小學中年級作文老師。每位學生的作文都有獨特之處，你會仔細閱讀後給出針對這篇文章的個人化評語，絕不給出套用模板的評語。";
+            } else if (grade === 'upper') {
+                gradeName = "國小高年級";
+                coreCompetency = "能展現「完整的文章結構」(有開頭、發展、結尾)、能加入個人的「感受或看法」、能使用簡單的修辭 (如譬喻)";
+                feedbackPrompt = `請幫學生生成作文評語，語氣要親切、鼓勵，適合小五小六學生理解。
+【重要規則】
+- 必須從這篇作文中找出一到兩個「具體的亮點」，直接引用學生寫的詞語或句子（用「」標示），說明這樣寫的效果（例如：使讀者感受到…、讓文章顯得…）。
+- 提出一到兩個「針對這篇文章的改進建議」，需指出是文章的哪個部分或哪類問題（例如：「開頭直接進入正題，若能先用一句話點出主旨…」），不可以是套用於所有文章的通用建議。
+- 評語的切入角度（從優點、從結構、從立意等）要隨每篇文章的特色而變化，不可使用固定的三段式框架。
+- 評語字數：80～120字。`;
+                systemInstruction = "你是一位專業、有啟發性的小學高年級作文老師。每位學生的作文都有獨特之處，你會仔細閱讀後給出針對這篇文章的個人化評語，絕不給出套用模板的評語。";
+            } else { // junior
+                gradeName = "國中";
+                coreCompetency = "能展現「深刻的立意」、能提出「明確的論點與論據」、能做到「結構嚴謹、文筆流暢」";
+                feedbackPrompt = `請幫學生生成作文評語，語氣要專業、具啟發性，適合國中學生。
+【重要規則】
+- 必須從這篇作文中找出「最具價值的亮點」，直接引用學生寫的句子或段落（用「」標示），分析為什麼這樣的表達有說服力或文學效果。
+- 提出一到兩個「針對這篇文章的深度修改建議」，需明確指出是文章的哪個段落或論述層次有問題，並說明如何改（例如：「第三段以…作結，若能改以…收尾，可強化立意的深度」）。
+- 評語的切入角度要根據每篇文章最突出的特質或問題決定（例如：立意、結構、論證、文字風格），而非每次都按固定順序評論。
+- 評語字數：100～150字。`;
+                systemInstruction = "你是一位專業、能啟發思考的國中語文老師，你的評語一針見血且充滿建設性。每位學生的作文都有獨特之處，你會仔細閱讀後給出針對這篇文章的個人化評語，絕不給出套用模板的評語。";
+            }
+            
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    ratings: {
+                        type: "OBJECT",
+                        properties: Object.keys(allCriteria).reduce((obj, key) => {
+                            obj[key] = { type: "NUMBER", description: "1到5顆星的評分" };
+                            return obj;
+                        }, {}),
+                    },
+                    feedback: { type: "STRING", description: "生成的評語文字" },
+                    revisedComposition: {
+                        type: "OBJECT",
+                        properties: {
+                            revisedText: { type: "STRING", description: "修改後的作文全文。修改或增加的部分請用【】符號框起來。" },
+                            explanations: { type: "STRING", description: "條列式說明修改的原因，語氣溫和且具指導性。" }
+                        },
+                        required: ["revisedText", "explanations"]
+                    }
+                },
+                required: ["ratings", "feedback", "revisedComposition"]
+            };
+            
+             const guidancePrompt = `
+                \n---\n
+                最後，請你扮演一名資深的國文老師，提供這篇作文的「寫作指導」。請遵循以下規則：
+                1.  你的核心任務是根據學生的「${gradeName}」程度，以會考六級分（立意深刻、結構嚴謹、文筆流暢優美、論證精闢）的標準，提供修改建議與訂正範本。
+                2.  提供的修改建議或範文，其重點必須是為了展現 **${gradeName}** 階段的核心能力要求：**「${coreCompetency}」**。
+                3.  在修改後的「訂正範本」(revisedText)中，將所有修改或增加的文字、標點符號，都用【】符號框起來，以便學生對照。請保留學生的原意，但要提升其表達的品質。
+                4.  在「修改說明」(explanations)中，必須以條列式分項呈現，並用換行符號分隔每一個項目。清楚說明你為什麼這麼修改，解釋這麼改的好處，並連結回該學習階段的核心能力要求。每一條說明都必須對應到這篇作文的「具體修改處」，不可提出適用於所有文章的通用建議。
+            `;
+
+            const userQuery = `
+                作文內容：\n---\n${composition}\n---\n
+                請根據以下針對「${gradeName}」學生的評分向度，為這篇作文評分(1-5顆星)，並根據指定的評語提示詞生成評語。
+                評分向度: ${JSON.stringify(allCriteria, null, 2)}
+                評語提示詞: ${feedbackPrompt}
+                ${guidancePrompt}
+                請嚴格依照指定的 JSON schema 格式回傳結果。
+            `;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema,
+                    temperature: 1.2,
+                }
+            };
+            return payload;
+        }
+
+        // --- Main Review Logic ---
+        startReviewBtn.addEventListener('click', async () => {
+            const text = compositionTextarea.value.trim();
+            if (!text && currentFileArray.length === 0) {
+                alert("請先貼上作文文字或上傳圖片/PDF！");
+                return;
+            }
+
+            // UI state: loading
+            startReviewBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            resultView.classList.add('hidden');
+            guidanceView.classList.add('hidden');
+            placeholderView.classList.remove('hidden');
+            guidancePlaceholder.classList.remove('hidden');
+            errorView.classList.add('hidden');
+            currentReviewData = null;
+
+
+            try {
+                let compositionToReview = text;
+                if (currentFileArray.length > 0) {
+                     btnText.textContent = '辨識檔案中...';
+                     btnText.classList.remove('hidden');
+                     btnLoader.classList.add('hidden');
+
+                     compositionToReview = await extractTextFromFiles(currentFileArray);
+                     compositionTextarea.value = compositionToReview; // Display extracted text
+                }
+                
+                if (!compositionToReview) {
+                    throw new Error("無法從圖片或檔案中辨識文字，或文字內容為空。");
+                }
+                
+                btnText.textContent = 'AI 批閱中...';
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+
+                const grade = document.querySelector('input[name="grade-level"]:checked').value;
+                const reviewPayload = createReviewPrompt(compositionToReview, grade);
+                const result = await callGeminiAPI(reviewPayload);
+
+                const reviewData = JSON.parse(result.candidates[0].content.parts[0].text);
+                currentReviewData = reviewData;
+                
+                if (reviewData && reviewData.ratings && reviewData.feedback && reviewData.revisedComposition) {
+                    displayResult(reviewData);
+                    displayGuidance(reviewData.revisedComposition);
+                    saveToHistory({
+                        id: Date.now(),
+                        text: compositionToReview,
+                        result: reviewData,
+                        grade: grade
+                    });
+                } else {
+                     throw new Error("AI 回應格式不正確或缺少評分/指導。");
+                }
+               
+            } catch (error) {
+                console.error('Review failed:', error);
+                errorView.classList.remove('hidden');
+                placeholderView.classList.add('hidden');
+                guidancePlaceholder.classList.remove('hidden');
+
+            } finally {
+                // UI state: reset
+                startReviewBtn.disabled = false;
+                btnText.textContent = '🚀 開始批閱';
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
+        });
+
+        // --- Display & Action Logic ---
+        function displayResult(data) {
+            ratingsContainer.innerHTML = '';
+            
+            const displayOrder = ["標點符號", "遣詞造句", "語句通順", "結構組織", "立意取材", "題意理解", "綜合表現"];
+            const ratingsToShow = { ...data.ratings };
+
+            const renderRating = (key, value) => {
+                const ratingEl = document.createElement('div');
+                ratingEl.className = 'flex justify-between items-center';
+                
+                const labelEl = document.createElement('span');
+                labelEl.textContent = key;
+                labelEl.className = 'font-semibold';
+
+                const starsEl = document.createElement('div');
+                starsEl.className = 'star-rating';
+                for (let i = 1; i <= 5; i++) {
+                    const star = document.createElement('span');
+                    star.textContent = '★';
+                    star.className = `star ${i <= value ? 'filled' : ''}`;
+                    starsEl.appendChild(star);
+                }
+                
+                ratingEl.appendChild(labelEl);
+                ratingEl.appendChild(starsEl);
+                ratingsContainer.appendChild(ratingEl);
+            };
+
+            // Render in the specified order
+            displayOrder.forEach(key => {
+                if (ratingsToShow.hasOwnProperty(key)) {
+                    renderRating(key, ratingsToShow[key]);
+                    delete ratingsToShow[key]; // Remove from object so it's not rendered again
+                }
+            });
+
+            // Render any remaining ratings that might have been returned by the AI
+            if (Object.keys(ratingsToShow).length > 0) {
+                const divider = document.createElement('hr');
+                divider.className = 'my-2 border-dashed';
+                ratingsContainer.appendChild(divider);
+                Object.entries(ratingsToShow).forEach(([key, value]) => {
+                    renderRating(key, value);
+                });
+            }
+
+            feedbackText.innerHTML = data.feedback.replace(/\n/g, '<br>');
+
+            placeholderView.classList.add('hidden');
+            errorView.classList.add('hidden');
+            resultView.classList.remove('hidden');
+        }
+        
+        function displayGuidance(guidance) {
+            if (!guidance || !guidance.revisedText || !guidance.explanations) {
+                guidanceView.classList.add('hidden');
+                guidancePlaceholder.classList.remove('hidden');
+                return;
+            }
+
+            const highlightedText = guidance.revisedText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/【/g, '<strong class="text-red-600 bg-red-100 px-1 rounded">')
+                .replace(/】/g, '</strong>');
+            revisedText.innerHTML = `<p>${highlightedText.replace(/\n/g, '<br>')}</p>`;
+
+            const explanationList = guidance.explanations
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line)
+                .map(line => {
+                    // Remove any existing numbering (e.g., "1.", "2. ") from the start of the line
+                    const cleanedLine = line.replace(/^\s*\d+\.\s*/, '');
+                    return `<li>${cleanedLine.replace(/&/g, '&amp;').replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`;
+                })
+                .join('');
+            revisionExplanation.innerHTML = `<ol class="list-decimal list-inside space-y-1">${explanationList}</ol>`;
+
+            guidancePlaceholder.classList.add('hidden');
+            guidanceView.classList.remove('hidden');
+        }
+
+
+        copyBtn.addEventListener('click', () => {
+            const resultText = formatResultForCopy();
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = resultText;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            try {
+                 document.execCommand('copy');
+                 alert('已成功複製到剪貼簿！');
+            } catch (err) {
+                 console.error('複製失敗:', err);
+                 alert('複製失敗，請手動選取複製。');
+            }
+            document.body.removeChild(tempTextarea);
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const resultText = formatResultForCopy();
+            const blob = new Blob([resultText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Puti-AI批閱結果_${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        function formatResultForCopy() {
+            if (!currentReviewData) return "";
+
+            let text = '各向度星級評分\n====================\n\n';
+            
+            const displayOrder = ["標點符號", "遣詞造句", "語句通順", "結構組織", "立意取材", "題意理解", "綜合表現"];
+            const ratingsToCopy = { ...currentReviewData.ratings };
+
+            displayOrder.forEach(key => {
+                if (ratingsToCopy.hasOwnProperty(key)) {
+                    const value = ratingsToCopy[key];
+                    text += `${key}: ${'★'.repeat(value)}${'☆'.repeat(5 - value)}\n`;
+                    delete ratingsToCopy[key];
+                }
+            });
+
+            Object.entries(ratingsToCopy).forEach(([key, value]) => {
+                const value_ = ratingsToCopy[key];
+                text += `${key}: ${'★'.repeat(value_)}${'☆'.repeat(5 - value_)}\n`;
+            });
+
+            text += `\n老師評語：\n${currentReviewData.feedback}\n`;
+
+            if (currentReviewData.revisedComposition) {
+                text += '\n寫作指導\n====================\n\n';
+                text += `訂正範本：\n${currentReviewData.revisedComposition.revisedText}\n\n`;
+                text += `修改說明：\n${currentReviewData.revisedComposition.explanations}\n`;
+            }
+
+            return text;
+        }
+
+        // --- History Logic ---
+        function loadHistory() {
+            const storedHistory = localStorage.getItem('putiAIReviewHistory');
+            if (storedHistory) {
+                reviewHistory = JSON.parse(storedHistory);
+            }
+            renderHistory();
+        }
+
+        function saveToHistory(entry) {
+            reviewHistory.unshift(entry);
+            if (reviewHistory.length > 20) { // Limit history size
+                reviewHistory.pop();
+            }
+            localStorage.setItem('putiAIReviewHistory', JSON.stringify(reviewHistory));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (reviewHistory.length === 0) {
+                historyList.appendChild(noHistoryMsg);
+                clearHistoryBtn.disabled = true;
+            } else {
+                clearHistoryBtn.disabled = false;
+
+                const dailyTotals = reviewHistory.reduce((acc, item) => {
+                    const itemDate = new Date(item.id);
+                    const dateKey = `${(itemDate.getMonth() + 1).toString().padStart(2, '0')}${itemDate.getDate().toString().padStart(2, '0')}`;
+                    acc[dateKey] = (acc[dateKey] || 0) + 1;
+                    return acc;
+                }, {});
+                
+                const dailyCounters = { ...dailyTotals };
+
+                reviewHistory.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'history-item flex justify-between items-center p-2 rounded-lg cursor-pointer';
+                    
+                    const itemDate = new Date(item.id);
+                    const dateKey = `${(itemDate.getMonth() + 1).toString().padStart(2, '0')}${itemDate.getDate().toString().padStart(2, '0')}`;
+                    
+                    const serialNumber = dailyCounters[dateKey];
+                    dailyCounters[dateKey]--;
+                    
+                    const historyId = `${dateKey}-${serialNumber.toString().padStart(3, '0')}`;
+
+                    div.innerHTML = `<div class="flex items-center">
+                                        <span class="font-semibold text-indigo-600">${historyId}</span>
+                                     </div>
+                                     <span class="text-xs text-gray-400 flex-shrink-0">${new Date(item.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>`;
+                                     
+                    div.addEventListener('click', () => {
+                        currentReviewData = item.result;
+                        document.querySelector(`input[name="grade-level"][value="${item.grade}"]`).checked = true;
+                        compositionTextarea.value = item.text;
+                        displayResult(item.result);
+
+                        if (item.result.revisedComposition) {
+                            displayGuidance(item.result.revisedComposition);
+                        } else {
+                            guidanceView.classList.add('hidden');
+                            guidancePlaceholder.classList.remove('hidden');
+                        }
+                    });
+                    historyList.appendChild(div);
+                });
+            }
+        }
+        
+        clearHistoryBtn.addEventListener('click', () => {
+            if (reviewHistory.length > 0) {
+                confirmationModal.classList.remove('hidden');
+            }
+        });
+
+        confirmClearBtn.addEventListener('click', () => {
+            reviewHistory = [];
+            localStorage.removeItem('putiAIReviewHistory');
+            renderHistory();
+            confirmationModal.classList.add('hidden');
+        });
+
+        cancelClearBtn.addEventListener('click', () => {
+            confirmationModal.classList.add('hidden');
+        });
+
+        // Initial Load
+        function initialize() {
+            loadHistory();
+        }
+
+        initialize();
+    </script>
+</body>
+</html>
