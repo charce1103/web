@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>校園貼文小幫手</title>
+  <meta name="description" content="協助學校同仁快速整理 FB 貼文提示詞，可直接提供 AI 使用。" />
+  <style>
+    :root{
+      --bg:#f3f7fb;
+      --card:#ffffff;
+      --text:#24324a;
+      --sub:#5f6f86;
+      --line:#d8e2ef;
+      --primary:#2d6cdf;
+      --primary-dark:#1f57bc;
+      --soft:#eaf2ff;
+      --warn-bg:#fff4e5;
+      --warn-text:#8a5a00;
+      --success-bg:#eafaf0;
+      --success-text:#1f7a43;
+      --shadow:0 10px 30px rgba(30,55,90,.08);
+      --radius:16px;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    body{ line-height:1.6; }
+    .container{
+      max-width:1500px;
+      margin:0 auto;
+      padding:24px;
+      padding-bottom:40px;
+    }
+    .hero{
+      background:linear-gradient(135deg,#f8fbff 0%,#eaf2ff 100%);
+      border:1px solid #dbe7fb;
+      border-radius:24px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+    }
+    .hero h1{
+      margin:0 0 8px;
+      font-size:32px;
+      line-height:1.25;
+    }
+    .hero p{
+      margin:0;
+      color:var(--sub);
+      font-size:15px;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:20px;
+      align-items:start;
+    }
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      border:1px solid #e5edf6;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      min-width:0;
+    }
+    .card-head{
+      padding:18px 20px 10px;
+      border-bottom:1px solid #edf2f7;
+      background:#fff;
+    }
+    .card-head h2{
+      margin:0;
+      font-size:20px;
+      line-height:1.4;
+    }
+    .card-head p{
+      margin:6px 0 0;
+      color:var(--sub);
+      font-size:14px;
+    }
+    .card-body{ padding:18px 20px 20px; }
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+      margin:0 0 10px;
+      color:#304462;
+    }
+    .scene-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:18px;
+    }
+    .scene-btn{
+      border:1px solid #cfe0ff;
+      background:#f8fbff;
+      color:#21457f;
+      border-radius:12px;
+      padding:12px;
+      font-size:14px;
+      cursor:pointer;
+      text-align:left;
+      min-height:68px;
+      transition:.2s ease;
+      width:100%;
+    }
+    .scene-btn:hover{ background:#eef5ff; transform:translateY(-1px); }
+    .scene-btn.active{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#fff;
+      box-shadow:0 8px 20px rgba(45,108,223,.25);
+    }
+    .scene-btn small{
+      display:block;
+      opacity:.9;
+      margin-top:3px;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .helper{
+      background:#f8fbff;
+      border:1px dashed #cfe0ff;
+      border-radius:12px;
+      padding:12px 14px;
+      margin:0 0 18px;
+      color:#42546f;
+      font-size:14px;
+    }
+    .helper strong{ color:#1d4078; }
+    .mode-switch{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:0 0 16px;
+    }
+    .mode-btn{
+      border:1px solid #cfe0ff;
+      background:#f8fbff;
+      color:#204788;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .mode-btn.active{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+      box-shadow:0 8px 20px rgba(45,108,223,.22);
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .field{ margin-bottom:14px; min-width:0; }
+    .field.full{ grid-column:1 / -1; }
+    label{
+      display:block;
+      font-weight:800;
+      margin-bottom:6px;
+      font-size:14px;
+    }
+    .hint{
+      margin-bottom:6px;
+      color:var(--sub);
+      font-size:12px;
+      line-height:1.5;
+    }
+    input, textarea, select{
+      width:100%;
+      border:1px solid #ccd7e5;
+      border-radius:12px;
+      padding:12px 13px;
+      font-size:16px;
+      font-family:inherit;
+      color:var(--text);
+      background:#fff;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    input:focus, textarea:focus, select:focus{
+      outline:none;
+      border-color:#7aa6ff;
+      box-shadow:0 0 0 4px rgba(73,128,255,.12);
+    }
+    textarea{
+      resize:vertical;
+      min-height:100px;
+    }
+    .bar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:8px;
+    }
+    button{
+      appearance:none;
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.2s ease;
+      min-height:46px;
+    }
+    .btn-primary{ background:var(--primary); color:#fff; }
+    .btn-primary:hover{ background:var(--primary-dark); }
+    .btn-soft{ background:var(--soft); color:#204788; }
+    .btn-soft:hover{ background:#dfeaff; }
+    .btn-gray{ background:#eef2f7; color:#44556d; }
+    .btn-gray:hover{ background:#e4eaf2; }
+    .status{
+      display:none;
+      margin-bottom:12px;
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:14px;
+    }
+    .status.warn{ background:var(--warn-bg); color:var(--warn-text); }
+    .status.success{ background:var(--success-bg); color:var(--success-text); }
+    .output-tools{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .output-meta{
+      margin-bottom:10px;
+      font-size:13px;
+      color:var(--sub);
+    }
+    .output{
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow-wrap:anywhere;
+      min-height:720px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#f8fafc;
+      padding:16px;
+      font-size:14px;
+      line-height:1.75;
+      color:#20314b;
+      overflow:auto;
+    }
+    .footer-note{
+      margin-top:14px;
+      color:var(--sub);
+      font-size:13px;
+    }
+
+    @media (max-width:1180px){
+      .layout{ grid-template-columns:1fr; }
+      .output{ min-height:520px; }
+    }
+    @media (max-width:900px){
+      .container{ padding:16px; }
+      .hero{ padding:18px; border-radius:18px; }
+      .hero h1{ font-size:28px; }
+      .scene-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .form-grid{ grid-template-columns:1fr; }
+      .card-head, .card-body{ padding-left:16px; padding-right:16px; }
+      .bar button, .output-tools button{ flex:1 1 calc(50% - 10px); }
+    }
+    @media (max-width:640px){
+      .container{ padding:12px; }
+      .hero h1{ font-size:24px; }
+      .hero p{ font-size:14px; }
+      .scene-grid{ grid-template-columns:1fr; }
+      .mode-switch{ display:grid; grid-template-columns:1fr 1fr; }
+      .mode-btn{ width:100%; text-align:center; }
+      .bar, .output-tools{ display:grid; grid-template-columns:1fr 1fr; }
+      .bar button, .output-tools button{ width:100%; margin:0; }
+      .card-head h2{ font-size:18px; }
+      input, textarea, select{ font-size:16px; }
+      .output{
+        min-height:420px;
+        font-size:13px;
+        line-height:1.7;
+        padding:14px;
+      }
+    }
+    @media (max-width:420px){
+      .mode-switch,
+      .bar,
+      .output-tools{
+        grid-template-columns:1fr;
+      }
+      .hero{ padding:16px; }
+      .card-head, .card-body{ padding-left:14px; padding-right:14px; }
+      .scene-btn{ min-height:auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>校園貼文小幫手</h1>
+      <p>選擇貼文情境、填入基本資訊，系統會自動整理成可直接提供給 AI 使用的提示詞。支援完整母提示詞版與精簡貼上版，也適合手機操作。</p>
+    </section>
+
+    <section class="layout">
+      <div class="card">
+        <div class="card-head">
+          <h2>資料填寫區</h2>
+          <p>先選情境，再填寫活動資訊。若資料不足，系統仍可先產出草稿，但建議補齊核心欄位。</p>
+        </div>
+        <div class="card-body">
+          <div class="section-title">常用情境</div>
+          <div class="scene-grid" id="sceneGrid"></div>
+
+          <div class="helper" id="sceneHelper">
+            <strong>情境說明：</strong>請先選擇一個情境，系統會提供對應的填寫提醒與語氣方向。
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="topic">活動／主題</label>
+              <div class="hint" id="hint-topic">請寫清楚主題名稱。</div>
+              <input id="topic" placeholder="例如：閱讀闖關活動－一起走進故事的世界" />
+            </div>
+
+            <div class="field">
+              <label for="participants">參與對象</label>
+              <div class="hint" id="hint-participants">例如：三至五年級學生、全校師生、家長與學生。</div>
+              <input id="participants" placeholder="例如：三至五年級學生" />
+            </div>
+
+            <div class="field">
+              <label for="time">時間</label>
+              <div class="hint">可寫日期、時段或學期脈絡。</div>
+              <input id="time" placeholder="例如：114 年 4 月 18 日上午" />
+            </div>
+
+            <div class="field">
+              <label for="place">地點</label>
+              <div class="hint">可寫校內場域、校外場域或線上形式。</div>
+              <input id="place" placeholder="例如：本校圖書室與多功能教室" />
+            </div>
+
+            <div class="field full">
+              <label for="highlight">亮點片段</label>
+              <div class="hint" id="hint-highlight">請描述現場實際畫面，不要只寫「活動很成功」。</div>
+              <textarea id="highlight" placeholder="例如：學生分組闖關、主動搶答、上台分享，老師在關卡中引導學生觀察文本細節。"></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="learning">學生學到的內容</label>
+              <div class="hint" id="hint-learning">請寫能力、態度、素養或學習歷程的成長。</div>
+              <textarea id="learning" placeholder="例如：提升閱讀理解、口語表達、合作能力，也學習同理與責任感。"></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="parents">家長會在意的重點</label>
+              <div class="hint" id="hint-parents">請從家長視角思考：孩子有沒有參與、有沒有學到、有沒有成長。</div>
+              <textarea id="parents" placeholder="例如：孩子是否主動參與、是否從活動中學到閱讀方法、是否在快樂氛圍中培養興趣。"></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="feature">希望傳達的學校特色</label>
+              <div class="hint" id="hint-feature">請寫學校想被看見的教育理念、教學特色或校園文化。</div>
+              <textarea id="feature" placeholder="例如：學校重視閱讀教育，透過有趣且有系統的活動設計，讓閱讀成為能思考、表達與分享的學習歷程。"></textarea>
+            </div>
+
+            <div class="field">
+              <label for="action">想引導的行動</label>
+              <div class="hint" id="hint-action">例如：提升認同、鼓勵參與、支持孩子持續學習。</div>
+              <input id="action" placeholder="例如：提升家長對學校閱讀教育的認同" />
+            </div>
+
+            <div class="field">
+              <label for="tone">補充語氣方向</label>
+              <div class="hint">可維持預設，也可手動調整。</div>
+              <select id="tone">
+                <option value="正式溫暖">正式溫暖</option>
+                <option value="溫暖親切">溫暖親切</option>
+                <option value="穩健專業">穩健專業</option>
+                <option value="活潑親近">活潑親近</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="photos">照片內容重點</label>
+              <div class="hint" id="hint-photos">以活動紀錄照、課堂互動畫面為主，請寫具體畫面。</div>
+              <textarea id="photos" placeholder="例如：學生拿著闖關卡專心作答、師生在故事關卡前互動、小組圍成一圈討論答案、學生上台分享閱讀心得。"></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="other">其他</label>
+              <div class="hint">可補充合作單位、活動脈絡、成果形式、注意事項等。</div>
+              <textarea id="other" placeholder="例如：本次活動由圖書教師與導師共同規劃，結合班級閱讀課程進行。"></textarea>
+            </div>
+          </div>
+
+          <div class="bar">
+            <button class="btn-soft" type="button" onclick="loadExample()">載入範例</button>
+            <button class="btn-primary" type="button" onclick="generatePrompt()">產生提示詞</button>
+            <button class="btn-gray" type="button" onclick="resetForm()">清空內容</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>提示詞輸出區</h2>
+          <p>可切換完整母提示詞版或精簡貼上版，再直接複製到 AI 對話框或下載為 Markdown 檔。</p>
+        </div>
+        <div class="card-body">
+          <div class="mode-switch">
+            <button class="mode-btn active" id="modeFullBtn" type="button" onclick="setPromptMode('full')">完整母提示詞版</button>
+            <button class="mode-btn" id="modeSimpleBtn" type="button" onclick="setPromptMode('simple')">精簡貼上版</button>
+          </div>
+
+          <div class="output-meta" id="outputMeta">目前模式：完整母提示詞版</div>
+
+          <div id="statusWarn" class="status warn"></div>
+          <div id="statusSuccess" class="status success"></div>
+
+          <div class="output-tools">
+            <button class="btn-primary" type="button" onclick="copyPrompt()">一鍵複製提示詞</button>
+            <button class="btn-soft" type="button" onclick="downloadMarkdown()">下載 md 檔</button>
+          </div>
+
+          <div id="output" class="output">請先選擇情境並填寫左側資料，再按下「產生提示詞」。</div>
+          <div class="footer-note">提醒：本工具生成的是「給 AI 的提示詞」，不是最終 FB 貼文本身。</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const scenes = {
+      "活動成果型": {
+        short: "校慶、運動會、闖關、成果展",
+        helper: "適合校慶、運動會、母親節活動、闖關活動、成果展等。重點請放在活動亮點、學生參與、學習收穫與家長能看見的成長。",
+        action: "提升家長與社區對學校活動辦理與教育成果的認同",
+        hints: {
+          topic: "請寫清楚活動名稱與主題，例如：校慶運動會、母親節感恩活動。",
+          highlight: "請描述現場的參與畫面、互動片段、成果展示或感人時刻。",
+          learning: "請寫學生透過活動學到的能力、態度或價值。",
+          parents: "請從家長角度思考：孩子是否投入、是否有成長、是否在活動中展現學習。",
+          feature: "請寫出學校如何透過活動設計展現教育理念與校園特色。",
+          photos: "可描述活動紀錄照、舞台畫面、闖關互動、班級合作、成果展示。"
+        }
+      },
+      "課程學習型": {
+        short: "閱讀課、雙語課、探究、藝文",
+        helper: "適合閱讀課、雙語課、自然實作、探究課、藝文課程等。重點是把課堂互動畫面與學習歷程寫清楚，不只交代上了什麼課。",
+        action: "提升家長對課程設計與學校教學品質的認同",
+        hints: {
+          topic: "請寫課程名稱、單元主題或學習活動名稱。",
+          highlight: "請描述學生操作、提問、討論、發表或探究的畫面。",
+          learning: "請寫學生在知識、技能、表達、合作或素養上的學習。",
+          parents: "家長通常在意孩子是否真的參與、是否理解內容、是否有能力成長。",
+          feature: "請寫課程設計亮點，例如探究導向、跨域整合、情境教學。",
+          photos: "可描述課堂互動、實作操作、小組討論、上台發表、作品呈現。"
+        }
+      },
+      "競賽得獎型": {
+        short: "校內外比賽、團體榮譽、作品獲獎",
+        helper: "適合校內外比賽、團體榮譽、學生作品獲獎。重點不只寫得獎結果，也要帶出努力歷程、教師指導與團隊合作，並避免過度聚焦可辨識的個別學生資訊。",
+        action: "提升家長與社區對學校培育成果的認同",
+        hints: {
+          topic: "請寫比賽名稱、獲獎名稱或榮譽主題。",
+          highlight: "請描述準備歷程、比賽現場、頒獎畫面或團隊合作情形。",
+          learning: "請寫學生在準備與參賽中累積的能力與態度。",
+          parents: "家長會在意孩子如何努力、是否獲得支持、是否在過程中成長。",
+          feature: "請寫學校如何支持學生發展潛能、提供指導與舞台。",
+          photos: "可描述頒獎合照、作品展示、練習過程、團體榮譽畫面。"
+        }
+      },
+      "校外交流型": {
+        short: "參訪、合作、姊妹校、社區共學",
+        helper: "適合校外參訪、大學或機構合作、姊妹校交流、社區共學。重點是交流收穫、眼界拓展與真實互動畫面。",
+        action: "展現學校與外部資源連結的能力與教育視野",
+        hints: {
+          topic: "請寫交流主題、合作單位或參訪名稱。",
+          highlight: "請描述交流互動、實地觀察、提問、共學或分享畫面。",
+          learning: "請寫學生從交流中獲得的見聞、視野、素養與反思。",
+          parents: "家長通常在意孩子是否走出教室、拓展眼界並有具體收穫。",
+          feature: "請寫學校如何連結社區、大學、機構或其他學校資源。",
+          photos: "可描述參訪導覽、互動交流、合影、實地觀察、共作活動。"
+        }
+      },
+      "品格教育型": {
+        short: "生命教育、感恩、服務、友善校園",
+        helper: "適合生命教育、感恩活動、服務學習、友善校園等。重點是價值觀培養、情意學習與生活實踐，不宜寫得太口號化。",
+        action: "讓家長看見學校在品格與情意教育上的用心",
+        hints: {
+          topic: "請寫清楚主題，例如：感恩週、服務學習、友善校園宣導。",
+          highlight: "請描述孩子實際參與、表達感謝、合作服務或互相關懷的畫面。",
+          learning: "請寫學生在同理、責任、尊重、合作等面向的學習。",
+          parents: "家長通常在意孩子是否學會尊重、感謝、負責與與人相處。",
+          feature: "請寫學校如何將品格教育融入日常與活動。",
+          photos: "可描述服務現場、互助時刻、感謝卡、團體互動、宣導活動。"
+        }
+      },
+      "節慶主題型": {
+        short: "開學、畢業、兒童節、教師節、歲末",
+        helper: "適合開學日、畢業季、兒童節、教師節、歲末祝福等。重點可偏溫暖、陪伴、祝福與校園記憶。",
+        action: "提升家長與師生對校園生活的情感連結與認同",
+        hints: {
+          topic: "請寫節慶名稱與校內活動主題。",
+          highlight: "請描述孩子參與節慶活動、祝福、互動或儀式感畫面。",
+          learning: "可寫學生在情感表達、感恩、祝福、適應與成長上的學習。",
+          parents: "家長會在意孩子是否開心融入、是否留下珍貴回憶、是否感受到陪伴。",
+          feature: "請寫學校如何營造有溫度的校園文化。",
+          photos: "可描述節慶布置、祝福卡片、舞台活動、師生互動畫面。"
+        }
+      },
+      "招生活動型": {
+        short: "新生報到、說明會、課程體驗日",
+        helper: "適合新生報到、招生說明會、課程體驗日。重點是用穩健、真實的方式呈現學校教育理念與特色，避免過度商業化或促銷感。",
+        action: "協助家長理解學校理念、環境與課程特色",
+        hints: {
+          topic: "請寫活動名稱，例如：新生體驗日、招生說明會。",
+          highlight: "請描述家長與孩子實際參與的畫面、課程體驗、校園導覽等。",
+          learning: "可寫孩子在體驗過程中的參與感、好奇心與學習互動。",
+          parents: "家長通常在意學校環境、課程特色、教師陪伴與孩子適應。",
+          feature: "請聚焦教育理念、課程特色與校園文化，不要寫成促銷文案。",
+          photos: "可描述校園導覽、課程體驗、親師互動、學習角落。"
+        }
+      },
+      "行政公告延伸型": {
+        short: "防災、健康促進、親職講座",
+        helper: "適合防災演練、健康促進、親職講座等。重點不是只發公告，而是讓家長理解活動的教育意義與實際價值。",
+        action: "讓家長理解行政措施背後的教育目的與安全照顧",
+        hints: {
+          topic: "請寫公告或活動主題，例如：防災演練、視力保健宣導。",
+          highlight: "請描述演練、講座、宣導活動中的實際互動畫面。",
+          learning: "請寫學生或家長從中獲得的知識、習慣或安全意識。",
+          parents: "家長通常在意安全、健康、親職支持與實用性。",
+          feature: "請寫學校如何把行政措施延伸為教育與照顧的一部分。",
+          photos: "可描述演練情境、講座畫面、操作示範、師生參與。"
+        }
+      },
+      "教師專業型": {
+        short: "公開授課、研習、共備、社群",
+        helper: "適合公開授課、教師研習、課程共備、專業社群。重點是讓教育界夥伴看見學校教師的專業成長與教學深度。",
+        action: "展現教師專業與學校持續精進教學的文化",
+        hints: {
+          topic: "請寫研習、公開授課、共備主題或專業社群名稱。",
+          highlight: "請描述教師觀課、討論、共備、反思或專家交流畫面。",
+          learning: "可寫教師專業成長如何回到學生學習現場。",
+          parents: "家長在意的是：教師是否持續進修，孩子能否受益於更好的教學。",
+          feature: "請寫學校如何支持教師專業成長與課程精進。",
+          photos: "可描述授課片段、共備討論、研習互動、成果分享。"
+        }
+      },
+      "學生作品型": {
+        short: "美術、閱讀、專題、科展海報",
+        helper: "適合美術創作、閱讀作品、專題成果、科展海報。重點在於作品背後的思考、創作歷程與學習表達。",
+        action: "讓家長看見學生作品背後的思考與學習投入",
+        hints: {
+          topic: "請寫作品主題、展覽名稱或成果類型。",
+          highlight: "請描述學生創作、展示、發表或解說作品的畫面。",
+          learning: "請寫學生在創作、探究、表達或修正過程中的學習。",
+          parents: "家長通常在意作品是否反映孩子的投入、成長與自信。",
+          feature: "請寫學校如何支持學生創作、探究與表達。",
+          photos: "可描述作品細節、展示現場、發表過程、師生討論。"
+        }
+      },
+      "家長參與型": {
+        short: "親職、志工、親子共學、回饋",
+        helper: "適合親職活動、志工服務、親子共學、家長回饋。重點在於親師合作、陪伴與共育氛圍。",
+        action: "強化親師合作與家校共育的正向連結",
+        hints: {
+          topic: "請寫活動名稱，例如：親職講座、親子共讀日、家長志工活動。",
+          highlight: "請描述家長與孩子、老師之間的互動畫面。",
+          learning: "可寫孩子在陪伴、合作、分享與表達上的學習。",
+          parents: "請從家長視角寫：參與是否有意義、是否理解學校理念、是否感受到被尊重。",
+          feature: "請寫學校如何經營親師合作與家校共育。",
+          photos: "可描述親子互動、家長志工服務、講座交流、共學活動。"
+        }
+      },
+      "校園日常型": {
+        short: "晨光閱讀、午餐教育、社團、日常",
+        helper: "適合晨光閱讀、打掃時光、午餐教育、社團練習等。這類內容能增加粉專溫度，讓家長看見孩子平凡但真實的學習日常。",
+        action: "提升家長對校園日常照顧與學習氛圍的信任感",
+        hints: {
+          topic: "請寫日常主題，例如：晨光閱讀時光、午餐教育、社團練習。",
+          highlight: "請描述孩子投入、互動、練習或自主管理的畫面。",
+          learning: "可寫習慣養成、生活教育、自律、合作或興趣培養。",
+          parents: "家長通常很在意孩子在校生活是否穩定、愉快、有學習節奏。",
+          feature: "請寫學校如何把日常生活經營成教育的一部分。",
+          photos: "可描述閱讀、打掃、午餐、排隊、練習、笑容與互動。"
+        }
+      }
+    };
+
+    let currentScene = "";
+    let promptMode = "full";
+
+    function initScenes() {
+      const grid = document.getElementById("sceneGrid");
+      grid.innerHTML = "";
+      Object.keys(scenes).forEach((name, index) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "scene-btn" + (index === 0 ? " active" : "");
+        btn.innerHTML = `${name}<small>${scenes[name].short}</small>`;
+        btn.onclick = () => selectScene(name);
+        grid.appendChild(btn);
+      });
+      selectScene(Object.keys(scenes)[0]);
+    }
+
+    function selectScene(name) {
+      currentScene = name;
+      [...document.querySelectorAll(".scene-btn")].forEach((btn, idx) => {
+        btn.classList.toggle("active", Object.keys(scenes)[idx] === name);
+      });
+      const scene = scenes[name];
+      document.getElementById("sceneHelper").innerHTML = `<strong>情境說明：</strong>${scene.helper}`;
+      document.getElementById("hint-topic").textContent = scene.hints.topic;
+      document.getElementById("hint-highlight").textContent = scene.hints.highlight;
+      document.getElementById("hint-learning").textContent = scene.hints.learning;
+      document.getElementById("hint-parents").textContent = scene.hints.parents;
+      document.getElementById("hint-feature").textContent = scene.hints.feature;
+      document.getElementById("hint-action").textContent = `建議方向：${scene.action}`;
+      document.getElementById("hint-photos").textContent = scene.hints.photos;
+
+      const actionInput = document.getElementById("action");
+      if (!actionInput.value.trim()) actionInput.value = scene.action;
+    }
+
+    function setPromptMode(mode) {
+      promptMode = mode;
+      document.getElementById("modeFullBtn").classList.toggle("active", mode === "full");
+      document.getElementById("modeSimpleBtn").classList.toggle("active", mode === "simple");
+      document.getElementById("outputMeta").textContent = mode === "full"
+        ? "目前模式：完整母提示詞版"
+        : "目前模式：精簡貼上版";
+
+      const currentOutput = document.getElementById("output").textContent.trim();
+      if (currentOutput && currentOutput !== "請先選擇情境並填寫左側資料，再按下「產生提示詞」。") {
+        generatePrompt();
+      }
+    }
+
+    function val(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function getFormData() {
+      return {
+        topic: val("topic"),
+        participants: val("participants"),
+        time: val("time"),
+        place: val("place"),
+        highlight: val("highlight"),
+        learning: val("learning"),
+        parents: val("parents"),
+        feature: val("feature"),
+        action: val("action"),
+        tone: val("tone"),
+        photos: val("photos"),
+        other: val("other")
+      };
+    }
+
+    function buildSceneRule() {
+      const rules = {
+        "招生活動型": "13. 招生活動型內容須避免過度商業化或促銷語氣，應以教育理念、課程特色、校園環境與親師信任為主軸。\n",
+        "競賽得獎型": "13. 競賽得獎型內容須兼顧榮譽與歷程，不可只強調名次，並避免過度集中描寫可辨識的個別學生資訊。\n",
+        "行政公告延伸型": "13. 行政公告延伸型內容須把公告轉化為家長看得懂的教育意義與照顧價值，不可只做制式通知。\n"
+      };
+      return rules[currentScene] || "";
+    }
+
+    function buildFullPrompt(data) {
+      const sceneRule = buildSceneRule();
+      return `請依據我提供的資料，直接撰寫適合「國小學校 Facebook 粉絲頁」的貼文，讀者以家長、教育界夥伴為主，其次為學生與社會人士。
+
+【情境類型】
+${currentScene}
+
+【任務目標】
+宣傳學校活動、學生學習成果、課程特色與校園亮點，提升家長認同、信任與參與感，並展現學校的教育價值與教學特色。
+
+【寫作原則】
+1. 使用繁體中文。
+2. 語氣真誠、清楚、溫暖且具專業感。
+3. 正式版須兼具官方感與溫度。
+4. 補充語氣方向：${data.tone}。
+5. 不只寫活動流程，要寫出學生學到什麼、成長了什麼、活動的教育意義是什麼。
+6. 內容需讓家長看見孩子的學習成果，也讓教育夥伴看見學校特色。
+7. 若資料不足，先條列缺少資訊，不可自行腦補。
+8. 若有照片資訊，請自然融入活動紀錄照與課堂互動畫面的描述，增加畫面感，但不得虛構細節。
+9. 避免揭露個資、避免過度辨識學生，不描寫可辨識的姓名、班級、家庭背景或敏感身分。
+10. 只寫有資料支持的內容；若沒有具體成果或數據，不可寫成「最棒、最頂尖、成效驚人、全面提升、廣受好評」等誇大語句。
+11. 不可使用「千萬別錯過」、「強勢登場」、「立即搶先看」、「錯過可惜」等促銷式語氣，應聚焦教育價值、學習歷程、校園特色與親師共感。
+12. 結尾可有自然互動引導，但不可要求留言、分享、標註或按讚。
+${sceneRule}14. Hashtag 以 1 至 2 個為限。
+
+【我提供的資訊】
+- 活動/主題：${data.topic}
+- 參與對象：${data.participants}
+- 時間：${data.time}
+- 地點：${data.place}
+- 亮點片段：${data.highlight}
+- 學生學到的內容：${data.learning}
+- 家長會在意的重點：${data.parents}
+- 希望傳達的學校特色：${data.feature}
+- 想引導的行動：${data.action}
+- 照片內容重點：${data.photos}
+- 其他：${data.other}
+
+【字數範圍】
+- 正式版貼文：250 至 400 字
+- 溫暖親切版：220 至 350 字
+- 精簡版貼文：80 至 150 字
+- 封面標題：20 字內
+
+【請直接輸出】
+一、正式版貼文
+二、溫暖親切版貼文
+三、精簡版貼文
+四、封面標題 3 個`;
+    }
+
+    function buildSimplePrompt(data) {
+      const sceneLine = `情境：${currentScene}`;
+      const extraRule = buildSceneRule().replace(/\n/g, "").replace(/^13\.\s*/, "");
+      return `請依據以下資料，直接撰寫適合「國小學校 Facebook 粉絲頁」的貼文。主要讀者為家長、教育界夥伴，其次為學生與社會人士。
+
+${sceneLine}
+
+寫作要求：
+- 使用繁體中文。
+- 語氣真誠、清楚、溫暖且具專業感；正式版須兼具官方感與溫度。
+- 補充語氣方向：${data.tone}。
+- 不只描述活動流程，要寫出學生學到什麼、成長了什麼、以及活動的教育意義。
+- 讓家長看見孩子的學習成果，也讓教育界夥伴看見學校特色。
+- 若資料不足，先條列缺少資訊，不可自行腦補。
+- 有照片資訊時，請自然融入活動紀錄照與課堂互動畫面的描述，但不得虛構細節。
+- 避免揭露個資與過度辨識學生，不描寫可辨識的姓名、班級、家庭背景或敏感身分。
+- 只寫有資料支持的內容；若沒有具體成果或數據，不可使用誇大語句。
+- 避免促銷式語氣，聚焦教育價值、學習歷程、校園特色與親師共感。
+- 結尾可自然引導互動，但不可要求留言、分享、標註或按讚。
+- Hashtag 以 1 至 2 個為限。
+${extraRule ? "- " + extraRule : ""}
+
+請使用以下資料：
+- 活動/主題：${data.topic}
+- 參與對象：${data.participants}
+- 時間：${data.time}
+- 地點：${data.place}
+- 亮點片段：${data.highlight}
+- 學生學到的內容：${data.learning}
+- 家長會在意的重點：${data.parents}
+- 希望傳達的學校特色：${data.feature}
+- 想引導的行動：${data.action}
+- 照片內容重點：${data.photos}
+- 其他：${data.other}
+
+請直接輸出：
+一、正式版貼文（250 至 400 字）
+二、溫暖親切版貼文（220 至 350 字）
+三、精簡版貼文（80 至 150 字）
+四、20 字內封面標題 3 個`;
+    }
+
+    function generatePrompt() {
+      const data = getFormData();
+      const requiredFields = [
+        ["活動／主題", data.topic],
+        ["參與對象", data.participants],
+        ["亮點片段", data.highlight],
+        ["學生學到的內容", data.learning],
+        ["家長會在意的重點", data.parents],
+        ["希望傳達的學校特色", data.feature]
+      ];
+
+      const missing = requiredFields.filter(item => !item[1]).map(item => item[0]);
+      const warn = document.getElementById("statusWarn");
+      const success = document.getElementById("statusSuccess");
+
+      if (missing.length > 0) {
+        warn.style.display = "block";
+        warn.textContent = `提醒：以下核心欄位尚未填寫，AI 仍可先產出草稿，但品質可能受影響：${missing.join("、")}`;
+      } else {
+        warn.style.display = "none";
+        warn.textContent = "";
+      }
+
+      const prompt = promptMode === "full" ? buildFullPrompt(data) : buildSimplePrompt(data);
+      document.getElementById("output").textContent = prompt;
+
+      success.style.display = "block";
+      success.textContent = "提示詞已更新，可直接複製或下載為 md 檔。";
+      setTimeout(() => {
+        success.style.display = "none";
+        success.textContent = "";
+      }, 2200);
+    }
+
+    function copyPrompt() {
+      const text = document.getElementById("output").textContent.trim();
+      if (!text || text === "請先選擇情境並填寫左側資料，再按下「產生提示詞」。") {
+        alert("目前沒有可複製的提示詞，請先產生內容。");
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        const success = document.getElementById("statusSuccess");
+        success.style.display = "block";
+        success.textContent = "已成功複製提示詞。";
+        setTimeout(() => {
+          success.style.display = "none";
+          success.textContent = "";
+        }, 1800);
+      }).catch(() => {
+        alert("複製失敗，請手動複製。");
+      });
+    }
+
+    function downloadMarkdown() {
+      const text = document.getElementById("output").textContent.trim();
+      if (!text || text === "請先選擇情境並填寫左側資料，再按下「產生提示詞」。") {
+        alert("目前沒有可下載的內容，請先產生提示詞。");
+        return;
+      }
+      const modeName = promptMode === "full" ? "完整母提示詞版" : "精簡貼上版";
+      const filenameScene = currentScene ? currentScene.replaceAll("／","-") : "提示詞";
+      const fileName = `校園貼文小幫手-${filenameScene}-${modeName}.md`;
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function resetForm() {
+      document.querySelectorAll("input[type='text'], textarea").forEach(el => el.value = "");
+      document.getElementById("time").value = "";
+      document.getElementById("place").value = "";
+      document.getElementById("tone").value = "正式溫暖";
+      document.getElementById("output").textContent = "請先選擇情境並填寫左側資料，再按下「產生提示詞」。";
+      document.getElementById("statusWarn").style.display = "none";
+      document.getElementById("statusWarn").textContent = "";
+      document.getElementById("statusSuccess").style.display = "none";
+      document.getElementById("statusSuccess").textContent = "";
+      if (currentScene) document.getElementById("action").value = scenes[currentScene].action;
+    }
+
+    function loadExample() {
+      selectScene("課程學習型");
+      document.getElementById("topic").value = "閱讀闖關活動－一起走進故事的世界";
+      document.getElementById("participants").value = "三至五年級學生";
+      document.getElementById("time").value = "114 年 4 月 18 日上午";
+      document.getElementById("place").value = "本校圖書室與多功能教室";
+      document.getElementById("highlight").value = "學生分組闖關、主動搶答、分享最喜歡的故事角色；老師在關卡中引導學生觀察文本細節，現場互動熱烈。";
+      document.getElementById("learning").value = "提升閱讀理解能力、口語表達能力與團隊合作能力，也學習從故事角色的行動中思考責任與同理心。";
+      document.getElementById("parents").value = "孩子是否主動參與、是否從活動中學到閱讀方法、是否能在快樂氛圍中培養閱讀興趣。";
+      document.getElementById("feature").value = "學校重視閱讀教育，透過有趣且有系統的活動設計，讓閱讀不只是安靜看書，而是能思考、表達與分享的學習歷程。";
+      document.getElementById("action").value = "提升家長對學校閱讀教育的認同，也讓更多家長支持孩子在家持續閱讀。";
+      document.getElementById("tone").value = "正式溫暖";
+      document.getElementById("photos").value = "學生拿著闖關卡專心作答、師生在故事關卡前互動、小組圍成一圈討論答案、學生上台分享閱讀心得。";
+      document.getElementById("other").value = "本次活動由圖書教師與導師共同規劃，結合班級閱讀課程進行。";
+      generatePrompt();
+    }
+
+    initScenes();
+    setPromptMode("full");
+  </script>
+</body>
+</html>
